@@ -16,7 +16,7 @@
 	<% if @editable %>
 		<% if !Setting.plugin_redmine_wktime['wktime_enter_issue_as'].blank? && Setting.plugin_redmine_wktime['wktime_enter_issue_as'].to_i == 1 %>
 				<th><%= "#{l(:label_wk_enter_issue_id)}/#{l(:field_subject)}" %></th>
-				<td>
+				<td> 
 					<%= check_box_tag('enter_issue_id', 1, (!params[:enter_issue_id].blank? && params[:enter_issue_id].to_i == 1), 
 					:onclick => "enterIssueIdorAssignUser();") %>
 				</td>
@@ -44,7 +44,16 @@
 	<td>
 		<%=h statusString(@wktime.status) unless @wktime.blank? %>
 	</td>
-	<td width="30px"></td>
+	<td width="30px">
+
+<!-- add checkbox to convert hours-days -->
+<th>Log time in days (<span id="userWorkingHoursId" ><%= @user.weekly_working_hours %></span> h/week <=> <%= @user.weekly_working_hours/5 %> h/day) </th>
+<td>
+<%= check_box_tag('checkBoxDisplayDayId', 1, @checkBoxDisplayDayId, :onclick => "convertHoursToDay(#{@user.weekly_working_hours});") %>
+</td>
+
+
+	</td>
 	<% status = @wktime.status unless @wktime.blank? %>	
 	<% if controller.filterTrackerVisible && 'a' != status && 's' != status && (params[:enter_issue_id].blank? || (!params[:enter_issue_id].blank? && !params[:enter_issue_id].to_i == 1)) %>		
 	<%

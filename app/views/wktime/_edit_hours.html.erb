@@ -23,9 +23,23 @@
 			<%#if this is from a previous template, don't print the hours%>
 			<td class="hours">
 				<%=h text_field_tag('hours' + @row.to_s() +'[]', entry.nil? || @prev_template ? '' : ("%.2f" % entry.hours) ,:size => 7,
+					:style =>  if @checkBoxDisplayDayId 
+					"display: none;" 
+				else
+					 "display: initial;" 
+				 end ,
 				:disabled => disable,
 				:onchange => "validateTotal(this, #{@wday_index},'#{controller.maxHour}');") %>
-				
+				<%=h text_field_tag('day' + @row.to_s() +'[]', entry.nil? || @prev_template ? '' : ("%.2f" % (entry.hours*5/entry.user.weekly_working_hours)) ,:size => 7, 
+					
+				:style =>  if @checkBoxDisplayDayId 
+					"display: initial;" 
+				else
+					 "display: none;" 
+				 end ,
+				:disabled => disable,
+				:onchange => "updateTablefromDayEntry(this, #{@wday_index});") %>
+
 				<%=h hidden_field_tag('ids' + @row.to_s() +'[]', entry.nil? || @prev_template ? '' : entry.id) %>
 				<%=h hidden_field_tag('disabled' + @row.to_s() +'[]', disable ) %>
 				

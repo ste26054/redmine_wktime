@@ -90,6 +90,11 @@ helper :custom_fields
   end
 
   def edit
+  	#-----add preference to user : checkbox for the logTime in days-----#
+  	@user = User.current
+	@checkBoxDisplayDayId = @user.pref[:checkBoxDisplayDayId] if @user.pref[:checkBoxDisplayDayId].present?
+	#-------#
+
 	@prev_template = false
 	@new_custom_field_values = getNewCustomField
 	setup
@@ -250,6 +255,20 @@ helper :custom_fields
 			end
 		}
 	end  
+
+	#----- add a preference to keep the value of the checkbox 'checkBoxDisplayDayId' -----#
+	@user = User.current
+	if(params[:checkBoxDisplayDayId].present?)
+		@checkBoxDisplayDayId = params[:checkBoxDisplayDayId]
+		@user.pref[:checkBoxDisplayDayId] = params[:checkBoxDisplayDayId]
+		@user.preference.save
+	else
+		@checkBoxDisplayDayId = nil
+		@user.pref[:checkBoxDisplayDayId] = nil
+		@user.preference.save
+	end
+	#--------------#
+
   end
 	
 	def deleterow	
