@@ -7,6 +7,7 @@ thours = nums = Array[0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0]
 prev_entry = nil
 entry = nil 
 currencySym = ""
+user = nil
 %>
 
 <div class="wk-contextual">
@@ -34,7 +35,9 @@ currencySym = ""
 %>
 
 				
-				<% if !entry.blank? %>				
+				<% if !entry.blank? %>	 
+				<%- user =	entry.user %>	
+
 					<% if !issueWritten %>
 						<% # this is a new Row %>
 						<% # close the previously opened row first %>
@@ -79,10 +82,21 @@ currencySym = ""
 	<td></td>
 	<td></td>
 	<% thours.each_with_index do |th,i| %>		
-		<td align="center"><%= currencySym %>&nbsp;<span id=<%= "day_total_#{i+1}" %>><%= ("%.2f" % th) %></span></td>
+		<td align="center">
+			<%= currencySym %>&nbsp;<span id=<%= "day_total_#{i+1}" %>
+				<% if @checkBoxDisplayDayId.nil? %> 
+				style="display: initial;"<% else %> style="display: none;"
+				<% end %> ><%= ("%.2f" % th) %></span>
+			<span id=<%= "day_total_#{i+1}_byDay"%> 
+				<% if @checkBoxDisplayDayId.nil? %> 
+				style="display: none;"<% else %> style="display: initial;"
+				<% end %>
+				> <%= ("%.2f" % ((th*5)/@user.weekly_working_hours)) %>  </span>
+			<span name="unitDayHoursName" ><% if @checkBoxDisplayDayId.nil? %> hours<% else %> day<% end %> </span>
+		</td>
 	<% end %>
 	<td>	
-	<b>	<%= l(:label_total) %>: <%= currencySym %>&nbsp;<span id="total_hours"><%= ("%.2f" % @total_hours) %></span></b>
+	<b>	<%= l(:label_total) %>: <%= currencySym %>&nbsp;<span id="total_hours"><%= ("%.2f" % @total_hours) %></span> hours</b>
 	<%=h hidden_field_tag('total', ("%.2f" % @total_hours) ) %>
 	<%=h hidden_field_tag('unit', currencySym) %>
 	</td>

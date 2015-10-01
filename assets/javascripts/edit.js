@@ -488,6 +488,8 @@ function enterIssueIdorAssignUser(){
 
 }
 
+
+
 function addRow(){
 	var issueTable = document.getElementById("issueTable");	
 	var saveButton = document.getElementById("wktime_save");
@@ -511,6 +513,8 @@ function addRow(){
 	{
 		submitButton.disabled = false;
 	}
+	var weeklyWorkingHours = document.getElementById("userWorkingHoursId").innerHTML; 
+	convertHoursToDay(weeklyWorkingHours);
 }
 
 function deleteRow(row, deleteMsg){
@@ -618,6 +622,7 @@ function renameElemProperties(row, index, newIndex){
 function renameCellIDs(cell, index, newIndex){
 	
 	renameProperty(cell, 'input', 'hours', index, newIndex);
+	renameProperty(cell, 'input', 'day', index, newIndex);
 	renameProperty(cell, 'input', 'ids', index, newIndex);
 	renameProperty(cell, 'input', 'disabled', index, newIndex);
 	renameProperty(cell, 'input', 'comments', index, newIndex);
@@ -731,10 +736,40 @@ function validateTotal(hourField, day, maxHour){
 		/*}*/
 		dayTotal = maxHour;
 	}
+	var weeklyWorkingHours = document.getElementById("userWorkingHoursId").innerHTML; 
+	updateDayTextField(hourField, weeklyWorkingHours);
 	updateDayTotal(day, dayTotal);
 	if(showWorkHeader){
 		updateRemainingHr(day);
 	}
+}
+
+function updateDayTextField(hourField, weeklyWorkingHours){
+	var dayField = hourField.parentElement.childNodes[3];
+	if(hourField.value){
+		dayField.value = ((hourField.value *5)/weeklyWorkingHours).toFixed(2);
+	}else{
+		dayField.value = "";
+	}
+
+}
+
+function updateHourTextField(dayField, weeklyWorkingHours){
+	var hourField = dayField.parentElement.childNodes[1];
+	if(dayField.value){
+		hourField.value = ((dayField.value*weeklyWorkingHours)/5).toFixed(2);
+	}else{
+		hourField.value = "";
+	}
+}
+
+function updateTablefromDayEntry(dayField, day)
+{	
+	var weeklyWorkingHours = document.getElementById("userWorkingHoursId").innerHTML; 
+	updateHourTextField(dayField, weeklyWorkingHours);
+
+	var dayTotal = calculateTotal(day);
+	updateDayTotal(day, dayTotal);
 }
 
 function calculateTotal(day){
@@ -786,10 +821,71 @@ function myTrim(val){
 	return val.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 }
 
+function convertHoursToDay(base){
+	//base is the total number of working hours per week (for 5 days)
+	var displayDayIdChk = document.getElementById("checkBoxDisplayDayId");
+ 	var unityElmts = document.getElementsByName("unitDayHoursName");
+
+	if(displayDayIdChk && displayDayIdChk.checked){
+
+		//---------------------day total display -  day
+		for(i=1; i<8; i++){			
+			var day_total = document.getElementById('day_total_'+i);
+			var day_total_byDay = document.getElementById('day_total_'+i+'_byDay');
+			day_total.style.display = "none"
+			day_total_byDay.style.display = "initial"
+
+			unityElmts[i-1].innerHTML = " day";
+		}
+
+		//--------------------textField display -  day
+		var tableLength = document.getElementsByClassName("time-entry").length;
+
+		for(j = 1; j<tableLength; j++){
+			var ligne_hours = document.getElementsByName('hours'+j+'[]');
+			var ligne_day = document.getElementsByName('day'+j+'[]');
+			for(k=0; k<7; k++){
+				ligne_hours[k].style.display = "none";
+				ligne_day[k].style.display = "initial";
+			}
+		}
+
+	}else{
+
+		//--------------------day total display -  hours
+		for(i=1; i<8; i++){
+			var day_total = document.getElementById('day_total_'+i);
+			var day_total_byDay = document.getElementById('day_total_'+i+'_byDay');
+			day_total.style.display = "initial"
+			day_total_byDay.style.display = "none"
+
+			unityElmts[i-1].innerHTML = " hours";
+		}
+
+		//-------------------textField display -  hours
+		var tableLength = document.getElementsByClassName("time-entry").length;
+		
+		for(j = 1; j<tableLength; j++){
+			var ligne_hours = document.getElementsByName('hours'+j+'[]');
+			var ligne_day = document.getElementsByName('day'+j+'[]');
+			for(k=0; k<7; k++){
+				ligne_hours[k].style.display = "initial";
+				ligne_day[k].style.display = "none";
+			}
+		}
+	}
+}
+
+
 function updateDayTotal(day, dayTotal){
+
 	var day_total = document.getElementById('day_total_'+day);
+	var day_total_byDay = document.getElementById('day_total_'+day+'_byDay');
+	var base = document.getElementById("userWorkingHoursId").innerHTML;
 	var currDayTotal = Number(day_total.innerHTML);
 	day_total.innerHTML = dayTotal.toFixed(2);	
+	day_total_byDay.innerHTML = ((dayTotal*5)/base).toFixed(2);
+
 	updateTotal(dayTotal - currDayTotal);
 }
 
