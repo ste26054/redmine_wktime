@@ -1,0 +1,5 @@
+<p>
+		<label>
+			<% if @user.pref[:checkBoxDisplayDayId]=="1"%>Log Time in Days: <% else %>Log Time in Hours: <% end %></label><%= link_to("Switch",:action => 'log_in_days', :controller => 'wktime', :user_id => User.current.id)%><% if @user.pref[:checkBoxDisplayDayId]=="1"%> to Hours<% else %> to Days<% end %>
+		
+</p>

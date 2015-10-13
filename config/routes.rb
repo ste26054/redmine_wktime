@@ -68,4 +68,7 @@
 		end
 	end   
   end
+
+
+  get 'wktime/log_in_days', :to => 'wktime#log_in_days' 
   

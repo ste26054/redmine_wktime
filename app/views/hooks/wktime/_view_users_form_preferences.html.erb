@@ -1,0 +1,3 @@
+<% if params[:id] %>
+		<p>[users] __ <%= link_to("LogInDays",:action => 'log_in_days', :controller => 'wktime', :user_id => params[:id]) %></p>
+<% end %>

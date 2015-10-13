@@ -62,10 +62,12 @@ Redmine::Plugin.register :redmine_wktime do
   menu :top_menu, :wkTime, { :controller => 'wktime', :action => 'index' }, :caption => :label_te, :if => Proc.new { Object.new.extend(WktimeHelper).checkViewPermission } 	
   project_module :time_tracking do
 	permission :approve_time_entries,  {:wktime => [:update]}, :require => :member	
-  end
+	permission :manage_log_time_unit, {:wktime => [:update]}, :require => :member	
+	end
 
 end
 
+require_dependency 'redmine_wktime/hooks'
 
 Rails.configuration.to_prepare do
 	if ActiveRecord::Base.connection.table_exists? "#{Setting.table_name}"

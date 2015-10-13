@@ -12,6 +12,26 @@ before_filter :check_log_time_redirect, :only => [:new]
 accept_api_auth :index, :edit, :update, :destroy, :deleteEntries
 
 helper :custom_fields
+
+def log_in_days
+		#----- add a preference to keep the value of the checkbox 'checkBoxDisplayDayId' -----#
+	@user = User.find(params[:user_id])
+	if @user.pref[:checkBoxDisplayDayId] == "1"
+
+		@user.pref[:checkBoxDisplayDayId] = "0"
+	else
+		@user.pref[:checkBoxDisplayDayId] = "1"
+	end
+	@user.preference.save
+	@checkBoxDisplayDayId = @user.pref[:checkBoxDisplayDayId] if @user.pref[:checkBoxDisplayDayId].present?
+ 
+ 	if @user.id == User.current.id
+		redirect_to my_account_path
+	else
+		redirect_to edit_user_path(@user.id)
+	end	
+
+end
  
   def index
 	set_filter_session
@@ -91,8 +111,8 @@ helper :custom_fields
 
   def edit
   	#-----add preference to user : checkbox for the logTime in days-----#
-  	@user = User.current
-	@checkBoxDisplayDayId = @user.pref[:checkBoxDisplayDayId] if @user.pref[:checkBoxDisplayDayId].present?
+  #	@user = User.current
+	#@checkBoxDisplayDayId = @user.pref[:checkBoxDisplayDayId] if @user.pref[:checkBoxDisplayDayId].present?
 	#-------#
 
 	@prev_template = false
@@ -231,7 +251,7 @@ helper :custom_fields
 				flash[:notice] = respMsg
 				#redirect_back_or_default :action => 'index'
 				#redirect_to :action => 'index' , :tab => params[:tab]
-                if params[:wktime_save_continue] 
+                if params[:wktime_save_continue]
 				      redirect_to :action => 'edit' , :startday => !@entries.present? ? @startday  : @startday+ 7, :user_id => @user.id, :project_id => params[:project_id]  
 				else                                                                                                
 				      redirect_to :action => 'index' , :tab => params[:tab]                   
@@ -257,16 +277,9 @@ helper :custom_fields
 	end  
 
 	#----- add a preference to keep the value of the checkbox 'checkBoxDisplayDayId' -----#
-	@user = User.current
-	if(params[:checkBoxDisplayDayId].present?)
-		@checkBoxDisplayDayId = params[:checkBoxDisplayDayId]
-		@user.pref[:checkBoxDisplayDayId] = params[:checkBoxDisplayDayId]
-		@user.preference.save
-	else
-		@checkBoxDisplayDayId = nil
-		@user.pref[:checkBoxDisplayDayId] = nil
-		@user.preference.save
-	end
+
+		@checkBoxDisplayDayId = User.current.pref[:checkBoxDisplayDayId]
+		
 	#--------------#
 
   end

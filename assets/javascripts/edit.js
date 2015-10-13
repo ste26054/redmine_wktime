@@ -513,8 +513,7 @@ function addRow(){
 	{
 		submitButton.disabled = false;
 	}
-	var weeklyWorkingHours = document.getElementById("userWorkingHoursId").innerHTML; 
-	convertHoursToDay(weeklyWorkingHours);
+	convertHoursToDay();
 }
 
 function deleteRow(row, deleteMsg){
@@ -736,7 +735,7 @@ function validateTotal(hourField, day, maxHour){
 		/*}*/
 		dayTotal = maxHour;
 	}
-	var weeklyWorkingHours = document.getElementById("userWorkingHoursId").innerHTML; 
+	var weeklyWorkingHours = document.getElementById("userWorkingHoursId").value; 
 	updateDayTextField(hourField, weeklyWorkingHours);
 	updateDayTotal(day, dayTotal);
 	if(showWorkHeader){
@@ -765,7 +764,7 @@ function updateHourTextField(dayField, weeklyWorkingHours){
 
 function updateTablefromDayEntry(dayField, day)
 {	
-	var weeklyWorkingHours = document.getElementById("userWorkingHoursId").innerHTML; 
+	var weeklyWorkingHours = document.getElementById("userWorkingHoursId").value; 
 	updateHourTextField(dayField, weeklyWorkingHours);
 
 	var dayTotal = calculateTotal(day);
@@ -821,12 +820,12 @@ function myTrim(val){
 	return val.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 }
 
-function convertHoursToDay(base){
+function convertHoursToDay(){
 	//base is the total number of working hours per week (for 5 days)
-	var displayDayIdChk = document.getElementById("checkBoxDisplayDayId");
+	var displayDayIdChk = document.getElementById("checkBoxDisplayDayId").value;
  	var unityElmts = document.getElementsByName("unitDayHoursName");
 
-	if(displayDayIdChk && displayDayIdChk.checked){
+	if(displayDayIdChk == "1"){
 
 		//---------------------day total display -  day
 		for(i=1; i<8; i++){			
@@ -881,7 +880,7 @@ function updateDayTotal(day, dayTotal){
 
 	var day_total = document.getElementById('day_total_'+day);
 	var day_total_byDay = document.getElementById('day_total_'+day+'_byDay');
-	var base = document.getElementById("userWorkingHoursId").innerHTML;
+	var base = document.getElementById("userWorkingHoursId").value;
 	var currDayTotal = Number(day_total.innerHTML);
 	day_total.innerHTML = dayTotal.toFixed(2);	
 	day_total_byDay.innerHTML = ((dayTotal*5)/base).toFixed(2);

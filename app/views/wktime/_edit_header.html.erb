@@ -11,6 +11,8 @@
 	<th><%=l(:field_user)%></th>
 	<td><%=h @user.login %>
 		<%=h hidden_field_tag('user_id', @user.id) %>
+		<%=h hidden_field_tag('userWorkingHoursId', @user.weekly_working_hours) %>
+		<%=h hidden_field_tag('checkBoxDisplayDayId', @user.pref[:checkBoxDisplayDayId]) %>
 	</td>
 	<td width="30px"></td>
 	<% if @editable %>
@@ -44,16 +46,7 @@
 	<td>
 		<%=h statusString(@wktime.status) unless @wktime.blank? %>
 	</td>
-	<td width="30px">
 
-<!-- add checkbox to convert hours-days -->
-<th>Log time in days (<span id="userWorkingHoursId" ><%= @user.weekly_working_hours %></span> h/week <=> <%= @user.weekly_working_hours/5 %> h/day) </th>
-<td>
-<%= check_box_tag('checkBoxDisplayDayId', 1, @checkBoxDisplayDayId, :onclick => "convertHoursToDay(#{@user.weekly_working_hours});") %>
-</td>
-
-
-	</td>
 	<% status = @wktime.status unless @wktime.blank? %>	
 	<% if controller.filterTrackerVisible && 'a' != status && 's' != status && (params[:enter_issue_id].blank? || (!params[:enter_issue_id].blank? && !params[:enter_issue_id].to_i == 1)) %>		
 	<%

@@ -29,7 +29,7 @@
 					 "display: initial;" 
 				 end ,
 				:disabled => disable,
-				:onchange => "validateTotal(this, #{@wday_index},'#{controller.maxHour}');") %>
+				:onchange => "validateTotal(this, #{@wday_index},#{controller.maxHour});") %>
 				<%=h text_field_tag('day' + @row.to_s() +'[]', entry.nil? || @prev_template ? '' : ("%.2f" % (entry.hours*5/entry.user.weekly_working_hours)) ,:size => 7, 
 					
 				:style =>  if @checkBoxDisplayDayId 
