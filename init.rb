@@ -10,6 +10,9 @@ end
 CustomFieldsHelper.send(:include, WktimeHelperPatch)
 
 Redmine::Plugin.register :redmine_wktime do
+	requires_redmine_plugin :redmine_leaves_holidays, :version_or_higher => '0.2'
+	requires_redmine :version_or_higher => "3.0.0"
+
   name 'Time & Expense'
   author 'Adhi Software Pvt Ltd'
   description 'This plugin is for entering Time & Expense'
@@ -67,7 +70,6 @@ Redmine::Plugin.register :redmine_wktime do
 
 end
 
-require_dependency 'redmine_wktime/hooks'
 
 Rails.configuration.to_prepare do
 	if ActiveRecord::Base.connection.table_exists? "#{Setting.table_name}"

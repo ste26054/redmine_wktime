@@ -1,0 +1,12 @@
+<h2><%= l(:label_te) %></h2> <!-- plugin title in the main plugin page-->
+<script type="text/javascript">
+   wktimeIndexUrl = '<%=url_for(:controller => "wktime", :action => "index", :tab => "wktime")%>';
+   wkexpIndexUrl = '<%=url_for(:controller => "wkexpense", :action => "index", :tab => "wkexpense")%>'; 
+   wkuserprefIndexUrl = '<%=url_for(:controller => "wkuserpref", :action => "index", :tab => "wkuserpref")%>'; 
+</script>
+
+<%= render_tabs time_expense_tabs %>
+
+<%= render :partial => 'list' %>
+
+<% html_title(l(:label_te)) -%> <!-- title in the browser tab-->

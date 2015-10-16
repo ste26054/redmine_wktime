@@ -557,10 +557,19 @@ end
 	end
 	
 	def time_expense_tabs			   
-		tabs = [
+	
+		if User.current.allowed_to?(:manage_log_time_unit, nil, :global => true)
+			tabs = [
+				{:name => 'wktime', :partial => 'wktime/tab_content', :label => :label_wktime},
+				{:name => 'wkexpense', :partial => 'wktime/tab_content', :label => :label_wkexpense},
+				{:name => 'wkuserpref', :partial => 'wktime/tab_content', :label => :label_userpref}
+			   ]
+		else 
+			tabs = [
 				{:name => 'wktime', :partial => 'wktime/tab_content', :label => :label_wktime},
 				{:name => 'wkexpense', :partial => 'wktime/tab_content', :label => :label_wkexpense}
-			   ]	
+			   ]
+		end
 	end		
 	
 	#change the date to first day of week

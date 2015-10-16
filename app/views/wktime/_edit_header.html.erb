@@ -12,7 +12,8 @@
 	<td><%=h @user.login %>
 		<%=h hidden_field_tag('user_id', @user.id) %>
 		<%=h hidden_field_tag('userWorkingHoursId', @user.weekly_working_hours) %>
-		<%=h hidden_field_tag('checkBoxDisplayDayId', @user.pref[:checkBoxDisplayDayId]) %>
+		<%=h hidden_field_tag('logTimeInDaysId', @user.pref[:logTimeInDays]) %>
+		<%=h hidden_field_tag('exceedLogTimeLimitId', @user.pref[:exceedLogTimeLimit]) %>
 	</td>
 	<td width="30px"></td>
 	<% if @editable %>

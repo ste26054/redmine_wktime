@@ -1,3 +1,13 @@
-<% if params[:id] %>
-		<p>[users] __ <%= link_to("LogInDays",:action => 'log_in_days', :controller => 'wktime', :user_id => params[:id]) %></p>
+<%= javascript_include_tag 'hook', :plugin => "redmine_wktime" %>
+
+<% if params[:id] && User.current.allowed_to?(:manage_log_time_unit, nil, :global => true) %>
+	<p>
+	<label>Log Time in Days </label>
+	<input id="logTimeInDaysCheckBox" type="checkbox" <% if @user.pref[:logTimeInDays]=="1"%>checked="checked"<% end %> onclick="activeLinkLogTimeUnit();">
+	<a hidden id="logTimeInDaysLink" href="/wktime/log_in_days?user_id=<%= params[:id] %>" ></a>
+	</p>
+	<% if @user.pref[:logTimeInDays]=="1"%> 
+	<p><label title="no extra time">Log time maximum value of 1day/day </label>  <input id="exceedLogTimeLimit" type="checkbox" <% if @user.pref[:exceedLogTimeLimit]=="1"%>checked="checked"<% end %> onclick="activeLinkLogTimeLimit();">
+	<a hidden id="logTimeLimitLink" href="/wktime/limit_log_time_entry?user_id=<%= params[:id] %>" ></a> </p>
+	<% end %>
 <% end %>
