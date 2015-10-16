@@ -741,9 +741,16 @@ function validateTotal(hourField, day, maxHour){
 	updateDayTotal(day, dayTotal);
 
 	if (maxHour > 0){
-		checkLimitLogTime(false, maxHour);
-	}
+		checkLimitLogTime(false, maxHour, true);
+	}else{
+		var tab = document.getElementById("tab").value;
+		if(tab=="wktime"){
+			var maxDailyHours = weeklyWorkingHours/5;
+			checkLimitLogTime(false, maxDailyHours, false);
+		}
 
+	}
+	
 	if(showWorkHeader){
 		updateRemainingHr(day);
 	}
@@ -779,7 +786,7 @@ function updateTablefromDayEntry(dayField, day)
 	var dayTotal = calculateTotal(day);
 	updateDayTotal(day, dayTotal);
 
-	if(logTimeInDaysId == "1" && exceedLogTimeLimit == "1" ){
+	if(logTimeInDaysId == "1" && exceedLogTimeLimit == "0" ){
 
 		var base = document.getElementById("userWorkingHoursId").value;
 		var newDailyTotal = ((dayTotal*5)/base); 
@@ -790,12 +797,12 @@ function updateTablefromDayEntry(dayField, day)
 		if(newDailyTotal > 1){
 			//var dayFieldValue = 1 - neutralDailyTotal;
 			//dayField.value = dayFieldValue.toFixed(2);
-			dailyTotalField.style.backgroundColor = "lightpink";
+			dailyTotalField.style.backgroundColor = "#ce5959";
 		}else{
 			dailyTotalField.style.backgroundColor = "";
 			
 		}
-		checkLimitLogTime(true, 1);
+		checkLimitLogTime(true, 1, true);
 
 	}
 
@@ -804,7 +811,7 @@ function updateTablefromDayEntry(dayField, day)
 
 }
 
-function checkLimitLogTime(logInDays, maxValue){
+function checkLimitLogTime(logInDays, maxValue, disableButton){
 	var errorCount = 0;
 	var saveButton = document.getElementById("wktime_save");
 	var continueButton = document.getElementById("wktime_save_continue");
@@ -815,7 +822,7 @@ function checkLimitLogTime(logInDays, maxValue){
 			//'day_total_'+i+'_byDay'
 			var dailyTotalField = document.getElementById('day_total_'+i+'_byDay');
 			if(Number(dailyTotalField.innerHTML)>maxValue){
-				dailyTotalField.style.backgroundColor = "lightpink";
+				dailyTotalField.style.backgroundColor = "#ce5959";
 				errorCount++;
 			}else{
 				dailyTotalField.style.backgroundColor = "";
@@ -826,13 +833,15 @@ function checkLimitLogTime(logInDays, maxValue){
 			//'day_total_'+i+'_byDay'
 			var dailyTotalField = document.getElementById('day_total_'+i);
 			if(Number(dailyTotalField.innerHTML)>maxValue){
-				dailyTotalField.style.backgroundColor = "lightpink";
+				dailyTotalField.style.backgroundColor = "#ce5959";
 				errorCount++;
 			}else{
 				dailyTotalField.style.backgroundColor = "";
 			}
 		}
 	}
+	if(disableButton)
+	{
 		if(errorCount > 0){
 			saveButton.disabled = true; 
 			saveButton.style.color = "lightgrey";
@@ -854,6 +863,7 @@ function checkLimitLogTime(logInDays, maxValue){
 			submitButton.style.color = "";
 			submitButton.style.border = "";
 		}
+	}
 }
 
 function calculateTotal(day){

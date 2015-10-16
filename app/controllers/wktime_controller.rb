@@ -34,11 +34,9 @@ helper :custom_fields
 	end
 	set_user_projects
 	if (!@manage_view_spenttime_projects.blank? && @manage_view_spenttime_projects.size > 0)
-
 		@selected_project = getSelectedProject(@manage_view_spenttime_projects)
-		#Rails.logger.info "************************* #{session[:wktimes]}"
-		setMembers 
 	end
+	setMembers 
 	ids = nil		
 	if user_id.blank?
 		ids = User.current.id.to_s
