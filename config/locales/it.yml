@@ -6,10 +6,17 @@ it:
   label_wk_project_dd_width: Larghezza dropdown dei progetti
   label_wk_issue_dd_width: Larghezza dropdown degli issues
   label_wk_actv_dd_width: Larghezza dropdown attività
+
+    #_______Setting/time
   label_wk_restr_max_hour: Forza ore massime per giorno
   label_wk_max_hour_day: Ore massime per giorno
   label_wk_restr_min_hour: Enforce Min hour per day
   label_wk_min_hour_day: Min hour per day
+  label_wk_allow_user_filter_tracker: Allow User Filtering by Tracker
+  label_wk_filter_issue_tracker: Filter Issue by Tracker
+  label_wk_log_in_days_granularity: Log time in days granularity
+
+
   label_wk_page_width: Larghezza Pagina
   label_wk_page_height: Altezza Pagina
   label_wk_margin_top: Margine dall\'alto
@@ -58,8 +65,6 @@ it:
   label_wk_next_week_tip: Next Week
   label_wkexpense: Expense
   label_te: Time & Expense
-  label_wk_allow_user_filter_tracker: Allow User Filtering by Tracker
-  label_wk_filter_issue_tracker: Filter Issue by Tracker
   label_wk_currency: Currency
   label_wk_time: Weekly Time  
  
@@ -109,3 +114,4 @@ it:
   
   permission_approve_time_entries: Approve time logs
 
+  label_userpref: Preferenze utente

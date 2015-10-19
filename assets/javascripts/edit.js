@@ -513,8 +513,7 @@ function addRow(){
 	{
 		submitButton.disabled = false;
 	}
-	var weeklyWorkingHours = document.getElementById("userWorkingHoursId").innerHTML; 
-	convertHoursToDay(weeklyWorkingHours);
+	convertHoursToDay();
 }
 
 function deleteRow(row, deleteMsg){
@@ -722,23 +721,36 @@ function validateTotal(hourField, day, maxHour){
 		maxHour=maxHour.replace(',', '\.');
 	}
 	maxHour= Number(maxHour);
-	if (maxHour > 0 && dayTotal > maxHour){
-		val = val.replace(decSeparator, '\.');
-		val = Number(val);
-		val = val - (dayTotal - maxHour);
+	// if (maxHour > 0 && dayTotal > maxHour){
+		// val = val.replace(decSeparator, '\.');
+		// val = Number(val);
+		// val = val - (dayTotal - maxHour);
 		/*if(val == 0)
 		{
 			hourField.value = "";
 		}
 		else
 		{*/
-			hourField.value = val.toFixed(2);
+			// hourField.value = val.toFixed(2);
 		/*}*/
-		dayTotal = maxHour;
-	}
-	var weeklyWorkingHours = document.getElementById("userWorkingHoursId").innerHTML; 
+		// dayTotal = maxHour;
+				
+	// }
+	var weeklyWorkingHours = document.getElementById("userWorkingHoursId").value; 
 	updateDayTextField(hourField, weeklyWorkingHours);
 	updateDayTotal(day, dayTotal);
+
+	if (maxHour > 0){
+		checkLimitLogTime(false, maxHour, true);
+	}else{
+		var tab = document.getElementById("tab").value;
+		if(tab=="wktime"){
+			var maxDailyHours = weeklyWorkingHours/5;
+			checkLimitLogTime(false, maxDailyHours, false);
+		}
+
+	}
+	
 	if(showWorkHeader){
 		updateRemainingHr(day);
 	}
@@ -765,11 +777,93 @@ function updateHourTextField(dayField, weeklyWorkingHours){
 
 function updateTablefromDayEntry(dayField, day)
 {	
-	var weeklyWorkingHours = document.getElementById("userWorkingHoursId").innerHTML; 
-	updateHourTextField(dayField, weeklyWorkingHours);
+	
+	var weeklyWorkingHours = document.getElementById("userWorkingHoursId").value;	
+	var logTimeInDaysId = document.getElementById("logTimeInDaysId").value; 
+	var exceedLogTimeLimit = document.getElementById("exceedLogTimeLimitId").value; 
 
+	updateHourTextField(dayField, weeklyWorkingHours);
 	var dayTotal = calculateTotal(day);
 	updateDayTotal(day, dayTotal);
+
+	if(logTimeInDaysId == "1" && exceedLogTimeLimit == "0" ){
+
+		var base = document.getElementById("userWorkingHoursId").value;
+		var newDailyTotal = ((dayTotal*5)/base); 
+		//var neutralDailyTotal = newDailyTotal - Number(dayField.value);
+		var dailyTotalField = document.getElementById("day_total_"+day+"_byDay");
+
+
+		if(newDailyTotal > 1){
+			//var dayFieldValue = 1 - neutralDailyTotal;
+			//dayField.value = dayFieldValue.toFixed(2);
+			dailyTotalField.style.backgroundColor = "#ce5959";
+		}else{
+			dailyTotalField.style.backgroundColor = "";
+			
+		}
+		checkLimitLogTime(true, 1, true);
+
+	}
+
+	//updateHourTextField(dayField, weeklyWorkingHours);
+	//dayTotal = calculateTotal(day);
+
+}
+
+function checkLimitLogTime(logInDays, maxValue, disableButton){
+	var errorCount = 0;
+	var saveButton = document.getElementById("wktime_save");
+	var continueButton = document.getElementById("wktime_save_continue");
+	var submitButton = document.getElementById("wktime_submit");
+
+	if(logInDays == true){
+		for(i = 1; i<8; i++){
+			//'day_total_'+i+'_byDay'
+			var dailyTotalField = document.getElementById('day_total_'+i+'_byDay');
+			if(Number(dailyTotalField.innerHTML)>maxValue){
+				dailyTotalField.style.backgroundColor = "#ce5959";
+				errorCount++;
+			}else{
+				dailyTotalField.style.backgroundColor = "";
+			}
+		}
+	}else{
+		for(i = 1; i<8; i++){
+			//'day_total_'+i+'_byDay'
+			var dailyTotalField = document.getElementById('day_total_'+i);
+			if(Number(dailyTotalField.innerHTML)>maxValue){
+				dailyTotalField.style.backgroundColor = "#ce5959";
+				errorCount++;
+			}else{
+				dailyTotalField.style.backgroundColor = "";
+			}
+		}
+	}
+	if(disableButton)
+	{
+		if(errorCount > 0){
+			saveButton.disabled = true; 
+			saveButton.style.color = "lightgrey";
+			saveButton.style.border = "lightgrey";
+			continueButton.disabled = true;
+			continueButton.style.color = "lightgrey";
+			continueButton.style.border = "lightgrey";
+			submitButton.disabled = true;
+			submitButton.style.color = "lightgrey";
+			submitButton.style.border = "lightgrey";
+		}else{
+			saveButton.disabled = false; 
+			saveButton.style.color = "";
+			saveButton.style.border = "";
+			continueButton.disabled = false;
+			continueButton.style.color = "";
+			continueButton.style.border = "";
+			submitButton.disabled = false;
+			submitButton.style.color = "";
+			submitButton.style.border = "";
+		}
+	}
 }
 
 function calculateTotal(day){
@@ -821,21 +915,22 @@ function myTrim(val){
 	return val.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 }
 
-function convertHoursToDay(base){
+function convertHoursToDay(){
 	//base is the total number of working hours per week (for 5 days)
-	var displayDayIdChk = document.getElementById("checkBoxDisplayDayId");
- 	var unityElmts = document.getElementsByName("unitDayHoursName");
+	var displayDayValue = document.getElementById("logTimeInDaysId").value;
+ 	var total_days_field = document.getElementById("total_days");
+ 	var total_hours_field = document.getElementById("total_hours");
 
-	if(displayDayIdChk && displayDayIdChk.checked){
+	if(displayDayValue == "1"){
+		total_hours_field.style.display = "none";
+		total_days_field.style.display = "initial";
 
 		//---------------------day total display -  day
 		for(i=1; i<8; i++){			
 			var day_total = document.getElementById('day_total_'+i);
 			var day_total_byDay = document.getElementById('day_total_'+i+'_byDay');
-			day_total.style.display = "none"
-			day_total_byDay.style.display = "initial"
-
-			unityElmts[i-1].innerHTML = " day";
+			day_total.style.display = "none";
+			day_total_byDay.style.display = "initial";
 		}
 
 		//--------------------textField display -  day
@@ -851,15 +946,15 @@ function convertHoursToDay(base){
 		}
 
 	}else{
+		total_hours_field.style.display = "initial";
+		total_days_field.style.display = "none";
 
 		//--------------------day total display -  hours
 		for(i=1; i<8; i++){
 			var day_total = document.getElementById('day_total_'+i);
 			var day_total_byDay = document.getElementById('day_total_'+i+'_byDay');
-			day_total.style.display = "initial"
-			day_total_byDay.style.display = "none"
-
-			unityElmts[i-1].innerHTML = " hours";
+			day_total.style.display = "initial";
+			day_total_byDay.style.display = "none";
 		}
 
 		//-------------------textField display -  hours
@@ -881,13 +976,13 @@ function updateDayTotal(day, dayTotal){
 
 	var day_total = document.getElementById('day_total_'+day);
 	var day_total_byDay = document.getElementById('day_total_'+day+'_byDay');
-	var base = document.getElementById("userWorkingHoursId").innerHTML;
+	var base = document.getElementById("userWorkingHoursId").value;
 	var currDayTotal = Number(day_total.innerHTML);
 	day_total.innerHTML = dayTotal.toFixed(2);	
 	day_total_byDay.innerHTML = ((dayTotal*5)/base).toFixed(2);
-
 	updateTotal(dayTotal - currDayTotal);
 }
+
 
 function updateTotal(increment){
 	var totalSpan = document.getElementById("total_hours");
@@ -895,7 +990,14 @@ function updateTotal(increment){
 	var total = Number(totalSpan.innerHTML);
 	total += increment;
 	totalHf.value = total;
+	updateTotalDay(total);
 	totalSpan.innerHTML = total.toFixed(2);
+}
+
+function updateTotalDay(totalHoursValue){
+	var total_days_field = document.getElementById("total_days");
+	var base  = document.getElementById("userWorkingHoursId").value;
+	total_days_field.innerHTML = ((totalHoursValue*5)/base).toFixed(2);
 }
 
 function updateRemainingHr(day)

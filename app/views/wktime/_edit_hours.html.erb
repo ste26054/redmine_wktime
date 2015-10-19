@@ -1,3 +1,4 @@
+	<%= javascript_include_tag 'edit', :plugin => "redmine_wktime" %>
 	<% if @trOpen %>
 		<% # close the previously opened tr %>
 		<% while @wday_index < padTill %>
@@ -23,22 +24,15 @@
 			<%#if this is from a previous template, don't print the hours%>
 			<td class="hours">
 				<%=h text_field_tag('hours' + @row.to_s() +'[]', entry.nil? || @prev_template ? '' : ("%.2f" % entry.hours) ,:size => 7,
-					:style =>  if @checkBoxDisplayDayId 
+					:style => if controller.logInDaysCondition(@user.id) 
 					"display: none;" 
-				else
-					 "display: initial;" 
-				 end ,
-				:disabled => disable,
-				:onchange => "validateTotal(this, #{@wday_index},'#{controller.maxHour}');") %>
-				<%=h text_field_tag('day' + @row.to_s() +'[]', entry.nil? || @prev_template ? '' : ("%.2f" % (entry.hours*5/entry.user.weekly_working_hours)) ,:size => 7, 
-					
-				:style =>  if @checkBoxDisplayDayId 
+				else 
 					"display: initial;" 
-				else
-					 "display: none;" 
-				 end ,
+				end,
 				:disabled => disable,
-				:onchange => "updateTablefromDayEntry(this, #{@wday_index});") %>
+				:onchange => "validateTotal(this, #{@wday_index},#{controller.maxHour});") %>
+
+				<input type="number" name="day<%=@row.to_s()%>[]" id="day<%=@row.to_s()%>_" min="0" max=<% if @user.pref[:exceedLogTimeLimit] == "0" %>"1"<% else %>"1.5"<% end %> step="<%= controller.dayGranularity %>" value=<%= entry.nil? || @prev_template ? '' : "%.2f" % ((entry.hours*5)/entry.user.weekly_working_hours) %> style=<%if controller.logInDaysCondition(@user.id) %>"display: initial;"<% else %>"display: none;"<% end %> onchange="updateTablefromDayEntry(this, <%=@wday_index%>);" >
 
 				<%=h hidden_field_tag('ids' + @row.to_s() +'[]', entry.nil? || @prev_template ? '' : entry.id) %>
 				<%=h hidden_field_tag('disabled' + @row.to_s() +'[]', disable ) %>

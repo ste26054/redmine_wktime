@@ -12,6 +12,8 @@ before_filter :check_log_time_redirect, :only => [:new]
 accept_api_auth :index, :edit, :update, :destroy, :deleteEntries
 
 helper :custom_fields
+
+
  
   def index
 	set_filter_session
@@ -33,8 +35,9 @@ helper :custom_fields
 	set_user_projects
 	if (!@manage_view_spenttime_projects.blank? && @manage_view_spenttime_projects.size > 0)
 		@selected_project = getSelectedProject(@manage_view_spenttime_projects)
-		setMembers 
 	end
+	
+	setMembers 
 	ids = nil		
 	if user_id.blank?
 		ids = User.current.id.to_s
@@ -87,12 +90,43 @@ helper :custom_fields
       }
 	  format.api
     end
+
+
   end
 
+def logInDaysCondition(user_id)
+	user_here = User.find(user_id)
+	if user_here.pref[:logTimeInDays].present?
+		if  user_here.pref[:logTimeInDays] == "1" && params[:controller] == "wktime"
+			if user_here.pref[:exceedLogTimeLimit].present?
+				@exceedLogTimeLimit = user_here.pref[:exceedLogTimeLimit] 
+			else
+				@exceedLogTimeLimit = "0" 
+			end
+			return true
+		else
+			return false
+		end
+	else
+		return false
+	end
+	
+end
+
   def edit
-  	#-----add preference to user : checkbox for the logTime in days-----#
-  	@user = User.current
-	@checkBoxDisplayDayId = @user.pref[:checkBoxDisplayDayId] if @user.pref[:checkBoxDisplayDayId].present?
+  	#-----add preference to user : for the logTime in days-----#
+  	if @user.pref[:logTimeInDays].present?
+		@logTimeInDays = @user.pref[:logTimeInDays] 
+		if @user.pref[:exceedLogTimeLimit].present?
+			@exceedLogTimeLimit = @user.pref[:exceedLogTimeLimit] 
+		else
+			@exceedLogTimeLimit = "0" 
+		end
+	else
+		@logTimeInDays = "0" 
+		@exceedLogTimeLimit = "0" 
+	end
+	
 	#-------#
 
 	@prev_template = false
@@ -231,7 +265,7 @@ helper :custom_fields
 				flash[:notice] = respMsg
 				#redirect_back_or_default :action => 'index'
 				#redirect_to :action => 'index' , :tab => params[:tab]
-                if params[:wktime_save_continue] 
+                if params[:wktime_save_continue]
 				      redirect_to :action => 'edit' , :startday => !@entries.present? ? @startday  : @startday+ 7, :user_id => @user.id, :project_id => params[:project_id]  
 				else                                                                                                
 				      redirect_to :action => 'index' , :tab => params[:tab]                   
@@ -256,16 +290,17 @@ helper :custom_fields
 		}
 	end  
 
-	#----- add a preference to keep the value of the checkbox 'checkBoxDisplayDayId' -----#
-	@user = User.current
-	if(params[:checkBoxDisplayDayId].present?)
-		@checkBoxDisplayDayId = params[:checkBoxDisplayDayId]
-		@user.pref[:checkBoxDisplayDayId] = params[:checkBoxDisplayDayId]
-		@user.preference.save
+	#----- retreive the preference for 'logTimeInDays' -----#
+  	if @user.pref[:logTimeInDays].present?
+		@logTimeInDays = @user.pref[:logTimeInDays] 
+		if @user.pref[:exceedLogTimeLimit].present?
+			@exceedLogTimeLimit = @user.pref[:exceedLogTimeLimit] 
+		else
+			@exceedLogTimeLimit = "0" 
+		end
 	else
-		@checkBoxDisplayDayId = nil
-		@user.pref[:checkBoxDisplayDayId] = nil
-		@user.preference.save
+		@logTimeInDays = "0" 
+		@exceedLogTimeLimit = "0" 
 	end
 	#--------------#
 
@@ -562,11 +597,28 @@ helper :custom_fields
 		Setting.plugin_redmine_wktime['wktime_restr_min_hour'].to_i == 1 ?  
 		(Setting.plugin_redmine_wktime['wktime_min_hour_day'].blank? ? 0 : Setting.plugin_redmine_wktime['wktime_min_hour_day']) : 0
 	end
-	
+
+	#added for logging time in days : its granularity
+	def dayGranularity
+		(Setting.plugin_redmine_wktime['wktime_log_in_days_granularity'].blank? ? 0.5 : Setting.plugin_redmine_wktime['wktime_log_in_days_granularity'])
+	end
+
 	def total_all(total)
 		html_hours(l_hours(total))
 	end
 	
+	def total_all_days
+		#((total*5)/User.current.weekly_working_hours)
+		 result = 0
+		if @entries.count > 0
+			result = @entries.map{ |entry| (entry.hours * 5)/User.find(entry.user_id).weekly_working_hours }.sum.round(2)
+			return result
+		else
+			return result
+		end
+
+	end
+
 	 def getStatus	
 		status = getTimeEntryStatus(params[:startDate].to_date,User.current.id)	
 		respond_to do |format|
@@ -1153,7 +1205,7 @@ private
 			if !hookProjMem.blank?
 				projMem = hookProjMem[0].blank? ? [] : hookProjMem[0]
 			else
-				projMem = @selected_project.members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC").distinct("#{User.table_name}.id")
+				projMem = @selected_project.blank? ? [] : @selected_project.members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC").distinct("#{User.table_name}.id")
 			end				
 			@members = projMem.collect{|m| [ m.name, m.user_id ] }
 		elsif filter_type == '2'
@@ -1308,6 +1360,7 @@ private
 		
 		result = TimeEntry.find_by_sql("select sum(v2." + spField + ") as " + spField + " from (" + selectStr + sqlStr + wkSqlStr + ") as v2")		
 		@total_hours = result[0].hours
+		
 	end
 	
 	def findWkTEByCond(cond)
@@ -1434,8 +1487,12 @@ private
 			selected_proj_id = session[:wktimes][:project_id]
 		end
 		if !selected_proj_id.blank?
-			sel_project = projList.select{ |proj| proj.id == selected_proj_id.to_i }	
-			selected_project ||= sel_project[0] if !sel_project.blank?
+			sel_project = projList.select{ |proj| proj.id == selected_proj_id.to_i }
+			if !sel_project.blank?
+				selected_project ||= sel_project[0]
+			else
+				selected_project ||= projList[0] if !projList.blank?
+			end
 		else
 			selected_project ||= projList[0] if !projList.blank?
 		end

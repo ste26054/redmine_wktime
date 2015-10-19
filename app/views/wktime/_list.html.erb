@@ -11,8 +11,7 @@
 </th>
 <th><%= l(:field_start_date) %></th>
 <th><%= l(:field_user) %></th>
-<th><%= controller.getLabelforSpField %></th>
-<th>Days</th>
+<th><% if controller.logInDaysCondition(User.current.id) %> Days <% else %> <%= controller.getLabelforSpField %><% end %></th>
 <th><%= l(:field_status) %></th>
 <th></th>
 </tr>
@@ -25,9 +24,8 @@
 
 <td class="start_date"><%=h format_date(entry.spent_on) %></td>
 <td class="user"><%=h entry.user.login %></td>
-<td class="user"><%= controller.getUnit(entry) %>&nbsp;<%=h html_hours("%.2f" % entry.hours) %> </td>
 
-<td><%- result=(5*entry.hours)/entry.user.weekly_working_hours %><%= ("%.2f" % result) %></td>
+<td  class="user"><% if controller.logInDaysCondition(User.current.id) %><%- result=(5*entry.hours)/entry.user.weekly_working_hours %><%= ("%.2f" % result) %> <% else %> <%= controller.getUnit(entry) %>&nbsp;<%=h html_hours("%.2f" % entry.hours) %> <% end %></td>
 
 <td class="status"><%=h statusString(entry.status) unless entry.status.blank? %></td>
 <td align="center">

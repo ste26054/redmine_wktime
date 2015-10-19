@@ -1,0 +1,27 @@
+<%= javascript_include_tag 'index', :plugin => "redmine_wktime" %>
+<%= javascript_include_tag 'wkuserpref', :plugin => "redmine_wktime" %>
+
+<p> This page will allow you to manage the logging time unit of each active user: either the user logs in hours or in days. If the user has to log in days, he can not log more than 1d/day (by default).</p>
+
+<table class="list">
+	<thead>
+		<tr>
+			<th>User</th>
+			<th>Log time in days</th>
+			<th>If checked, allow logged time >= 1d/day</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		<% User.all.active.sort.each do |user| %>
+			<tr><td><%= user.name %></td>
+				<td><input id="logTimeInDaysCheckBoxFor<%= user.id%>" type="checkbox" <% if user.preference[:logTimeInDays]=="1"%>checked="checked"<% end %> onclick="activeLinkLogTimeUnit(this);">
+					<a hidden id="logTimeInDaysLinkFor<%= user.id%>" href="log_in_days?user_id=<%= user.id %>" ></a></td>
+				<td><input id="exceedLogTimeLimitFor<%= user.id%>" type="checkbox" <% if user.pref[:exceedLogTimeLimit]=="1"%>checked="checked"<% end %> <% if user.preference[:logTimeInDays]=="0" || !user.preference[:logTimeInDays] %>disabled<% end %> onclick="activeLinkLogTimeLimit(this);">
+					<a hidden id="logTimeLimitLinkFor<%= user.id%>" href="limit_log_time_entry?user_id=<%= user.id %>" ></a></td>
+			</tr>
+		<% end %>
+
+	</tbody>
+
+</table>

@@ -1,8 +1,8 @@
 <h2><%= l(:label_te) %></h2>
-
 <script type="text/javascript">
    wktimeIndexUrl = '<%=url_for(:controller => "wktime", :action => "index", :tab => "wktime")%>';
-   wkexpIndexUrl = '<%=url_for(:controller => "wkexpense", :action => "index", :tab => "wkexpense")%>';  
+   wkexpIndexUrl = '<%=url_for(:controller => "wkexpense", :action => "index", :tab => "wkexpense")%>'; 
+   wkuserprefIndexUrl = '<%=url_for(:controller => "wkuserpref", :action => "index", :tab => "wkuserpref")%>'; 
 </script>
 
 <%= render_tabs time_expense_tabs %>
