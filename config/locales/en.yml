@@ -5,10 +5,16 @@ en:
   label_wk_project_dd_width: Project Dropdown Width
   label_wk_issue_dd_width: Issue Dropdown Width
   label_wk_actv_dd_width: Activity Dropdown Width
+
+    #_______Setting/time
   label_wk_restr_max_hour: Enforce Max hour per day
   label_wk_max_hour_day: Max hour per day
   label_wk_restr_min_hour: Enforce Min hour per day
   label_wk_min_hour_day: Min hour per day
+  label_wk_allow_user_filter_tracker: Allow User Filtering by Tracker
+  label_wk_filter_issue_tracker: Filter Issue by Tracker
+  label_wk_log_in_days_granularity: Log time in days granularity
+
   label_wk_page_width: Page Width
   label_wk_page_height: Page Height
   label_wk_margin_top: Top Margin
@@ -56,8 +62,6 @@ en:
   label_wk_next_week_tip: Next Week
   label_wkexpense: Expense
   label_te: Time & Expense
-  label_wk_allow_user_filter_tracker: Allow User Filtering by Tracker
-  label_wk_filter_issue_tracker: Filter Issue by Tracker
   label_wk_currency: Currency
   label_wk_time: Weekly Time  
  

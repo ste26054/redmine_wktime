@@ -36,6 +36,7 @@ helper :custom_fields
 	if (!@manage_view_spenttime_projects.blank? && @manage_view_spenttime_projects.size > 0)
 		@selected_project = getSelectedProject(@manage_view_spenttime_projects)
 	end
+	
 	setMembers 
 	ids = nil		
 	if user_id.blank?
@@ -596,7 +597,12 @@ end
 		Setting.plugin_redmine_wktime['wktime_restr_min_hour'].to_i == 1 ?  
 		(Setting.plugin_redmine_wktime['wktime_min_hour_day'].blank? ? 0 : Setting.plugin_redmine_wktime['wktime_min_hour_day']) : 0
 	end
-	
+
+	#added for logging time in days : its granularity
+	def dayGranularity
+		(Setting.plugin_redmine_wktime['wktime_log_in_days_granularity'].blank? ? 0.5 : Setting.plugin_redmine_wktime['wktime_log_in_days_granularity'])
+	end
+
 	def total_all(total)
 		html_hours(l_hours(total))
 	end
@@ -1199,7 +1205,7 @@ private
 			if !hookProjMem.blank?
 				projMem = hookProjMem[0].blank? ? [] : hookProjMem[0]
 			else
-				projMem = @selected_project.members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC").distinct("#{User.table_name}.id")
+				projMem = @selected_project.blank? ? [] : @selected_project.members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC").distinct("#{User.table_name}.id")
 			end				
 			@members = projMem.collect{|m| [ m.name, m.user_id ] }
 		elsif filter_type == '2'
