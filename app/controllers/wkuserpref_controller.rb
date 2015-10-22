@@ -10,7 +10,7 @@ unloadable
 		if @user.pref[:logTimeInDays] == "1"
 			@user.pref[:logTimeInDays] = "0"
 			#by default if the user has to log in days, we put the limit to 1d/day max
-			@user.pref[:exceedLogTimeLimit] = "1"
+			@user.pref[:exceedLogTimeLimit] = "0"
 		else
 			@user.pref[:logTimeInDays] = "1"
 			@user.pref[:exceedLogTimeLimit] = "0"
