@@ -513,7 +513,9 @@ function addRow(){
 	{
 		submitButton.disabled = false;
 	}
+	if(document.getElementById("tab").value == "wktime"){
 	convertHoursToDay();
+	}
 }
 
 function deleteRow(row, deleteMsg){
