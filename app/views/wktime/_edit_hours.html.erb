@@ -32,7 +32,7 @@
 				:disabled => disable,
 				:onchange => "validateTotal(this, #{@wday_index},#{controller.maxHour});") %>
 
-				<input type=<%if controller.logInDaysCondition(@user.id) %>"number"<% else %>"hidden"<% end %> name="day<%=@row.to_s()%>[]" id="day<%=@row.to_s()%>_" min="0" max=<% if @user.pref[:exceedLogTimeLimit] == "0" %>"1"<% else %>"2"<% end %> step="<%= controller.dayGranularity %>" value=<% if entry.nil? || @prev_template %>'' <% else%><%= ("%.2f" % ((entry.hours*5)/entry.user.weekly_working_hours)) %> <%end %> style=<%if controller.logInDaysCondition(@user.id) %>"display: initial;"<% else %>"display: none;"<% end %> onchange="updateTablefromDayEntry(this, <%=@wday_index%>);" >
+				<input type=<%if controller.logInDaysCondition(@user.id) %>"number"<% else %>"hidden"<% end %> name="day<%=@row.to_s()%>[]" id="day<%=@row.to_s()%>_" min="0" max=<% if @user.pref[:exceedLogTimeLimit] == "0" %>"1"<% else %>"2"<% end %> step="<%= controller.dayGranularity %>" value=<% if entry.nil? || @prev_template %>'' <% else%><%= ("%.2f" % ((entry.hours*5)/entry.user.weekly_working_hours)) %> <%end %> style=<%if controller.logInDaysCondition(@user.id) %>"display: initial;"<% else %>"display: none;"<% end %> <% if disable %> disabled <% end %> onchange="updateTablefromDayEntry(this, <%=@wday_index%>);" >
 
 				<%=h hidden_field_tag('ids' + @row.to_s() +'[]', entry.nil? || @prev_template ? '' : entry.id) %>
 				<%=h hidden_field_tag('disabled' + @row.to_s() +'[]', disable ) %>
