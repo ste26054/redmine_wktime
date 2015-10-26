@@ -483,7 +483,10 @@ function enterIssueIdorAssignUser(){
 			issueAssignUser += "&tracker_ids=" +trackerListArr;
 		}
 	}
-		location.href = editUrl +issueID + issueAssignUser;
+		var link = document.getElementById("editUrlId").value;
+		location.href = link +issueID + issueAssignUser;
+		// not working well ==> can not retrieve the editUrl correctly
+		//location.href = ediUrl +issueID + issueAssignUser;
 	
 
 }
