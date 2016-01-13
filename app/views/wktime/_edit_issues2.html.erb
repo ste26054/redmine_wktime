@@ -19,11 +19,7 @@ if params[:enter_issue_id].blank?
 			options_for_select(projects, :selected =>  project_id),
 			:onchange => "projectChanged(this,#{@row.to_s()});", :style=> "width:#{Setting.plugin_redmine_wktime['wktime_project_dd_width']}px" ) %>
 		<% else %>
-			<% if project.blank? %>
-				<%= project_id %>
-			<% else %>
-				<%= project[0] %>
-			<% end %>
+			<%=h text_field_tag(isTemplate ? '__template__time_entry[][project_id]' : 'time_entry[][project_id]', project.blank? ? project_id : project[0], :readonly => true ) %>
 		<% end %>
 	</td>
 	<% 
@@ -37,7 +33,7 @@ if params[:enter_issue_id].blank?
 	allIssues = @projectIssues[project_id]
 	unless allIssues.blank?
 		allIssues.each do |i|
-			#issues << [ i.id.to_s + ' - ' + i.subject, i.id ] 			
+			#issues << [ i.id.to_s + ' - ' + i.subject, i.id ] 		
 			issues << [ i.to_s , i.id ] 
 			curr_issue_found = true if !entry.nil? && i.id == entry.issue_id
 		end
@@ -66,7 +62,15 @@ if params[:enter_issue_id].blank?
 			options_for_select(issues, :selected =>  entry.nil? ? 0 : entry.issue_id, :required => true),
 			:style=> "width:#{Setting.plugin_redmine_wktime['wktime_issue_dd_width']}px" ) %>
 		<% else %>
-			<%= entry.issue.subject if !entry.nil? && !entry.issue.nil? %>
+			<%# before modification - original from master 1.8.1 %>
+			<%#= entry.issue.subject if !entry.nil? && !entry.issue.nil? %>
+			<%# Soniaz modification - if the issue is closed, it will appear as not editable but we still send the data for the form to respect all the index from editable issue %>
+			<%=h text_field_tag(isTemplate ? '__template__time_entry[][issue_id]' : 'time_entry[][issue_id]', 
+			 if (!entry.nil? && !entry.issue.nil?)
+			  entry.issue
+			   else 
+			   	''
+			   	end, :readonly => true ) %>
 		<% end %>
 	</td>
 <% else %>
@@ -74,10 +78,10 @@ if params[:enter_issue_id].blank?
 		<%=h hidden_field_tag(isTemplate ? '__template__time_entry[][project_id]' : 'time_entry[][project_id]', 
 		entry.nil? ? '' : entry.project_id.to_s ) %>
 	</td>
-<td class="issue" align="left">
-		<%=h text_field_tag(isTemplate ? '__template__time_entry[][issue_id]' : 'time_entry[][issue_id]', 
-		entry.nil? ? '' : entry.issue_id, :onkeypress => "issueAutocomplete(this,#{@row.to_s()});") %>
-</td>
+	<td class="issue" align="left">
+			<%=h text_field_tag(isTemplate ? '__template__time_entry[][issue_id]' : 'time_entry[][issue_id]', 
+			entry.nil? ? '' : entry.issue_id, :onkeypress => "issueAutocomplete(this,#{@row.to_s()});") %>
+	</td>
 <% end %>
 
 <%
@@ -102,7 +106,15 @@ if params[:enter_issue_id].blank?
 	activities.blank? ? nil : options_for_select(activities, :selected => entry.nil? ? 0 : entry.activity_id),
 	:style=> "width:#{Setting.plugin_redmine_wktime['wktime_actv_dd_width']}px" ) %>
 <% else %>
-	<%= entry.activity.name unless entry.nil?%>
+	<%# before modification - original from master 1.8.1 %>
+	<%#= entry.activity.name unless entry.nil?%>
+	<%# Soniaz modification - if the issue is closed, it will appear as not editable but we still send the data for the form to respect all the index from editable issue %>
+	<%=h text_field_tag(isTemplate ? '__template__time_entry[][activity_id]' : 'time_entry[][activity_id]', 
+			unless entry.nil?
+			 entry.activity.name
+			  else
+			   ''
+			    end, :readonly => true ) %>
 <% end %>
 </td>
 
@@ -113,7 +125,11 @@ if params[:enter_issue_id].blank?
 		<%=h text_field_tag(isTemplate ? '__template__time_entry[][comments]' : 'time_entry[][comments]', 
 			 entry.nil? ? '' : entry.comments)%>
 	<% else %>
-		<%=h entry.nil? ? '' : entry.comments%>
+		<%# before modification - original from master 1.8.1 %>
+		<%#=h entry.nil? ? '' : entry.comments%>
+		<%# Soniaz modification - if the issue is closed, it will appear as not editable but we still send the data for the form to respect all the index from editable issue %>
+		<%=h text_field_tag(isTemplate ? '__template__time_entry[][comments]' : 'time_entry[][comments]', 
+			 entry.nil? ? '' : entry.comments, :readonly => true)%>
 	<% end %>
 	</td>
 <% else %>

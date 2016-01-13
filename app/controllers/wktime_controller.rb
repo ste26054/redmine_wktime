@@ -114,7 +114,7 @@ def logInDaysCondition(user_id)
 end
 
   def edit
-  	#-----add preference to user : for the logTime in days-----#
+  	#Soniaz contribution-----add preference to user : for the logTime in days-----#
   	if @user.pref[:logTimeInDays].present?
 		@logTimeInDays = @user.pref[:logTimeInDays] 
 		if @user.pref[:exceedLogTimeLimit].present?
@@ -180,15 +180,19 @@ end
 							Setting.plugin_redmine_wktime['wktime_use_approval_system'].to_i == 1)
 						
 	@wktime.transaction do
-		begin				
+		begin	
+
+
 			if errorMsg.blank? && (!params[:wktime_save].blank? || !params[:wktime_save_continue].blank? ||
-				(!params[:wktime_submit].blank? && @wkvalidEntry && useApprovalSystem))		
+				(!params[:wktime_submit].blank? && @wkvalidEntry && useApprovalSystem))	
+
 				if !@wktime.nil? && ( @wktime.status == 'n' || @wktime.status == 'r')			
 					@wktime.status = :n
 					# save each entry
 					entrycount=0
 					entrynilcount=0
-					@entries.each do |entry|					
+
+					@entries.each do |entry|	
 						entrycount += 1
 						entrynilcount += 1 if (entry.hours).blank?
 						allowSave = true
@@ -214,6 +218,7 @@ end
 				setTotal(@wktime,total)
 				#if (errorMsg.blank? && total > 0.0)
 				errorMsg = 	updateWktime if (errorMsg.blank? && ((!@entries.blank? && entrycount!=entrynilcount) || @teEntrydisabled))	
+
 			end
 
 			if errorMsg.blank? && useApprovalSystem
@@ -290,7 +295,7 @@ end
 		}
 	end  
 
-	#----- retreive the preference for 'logTimeInDays' -----#
+	#Soniaz contribution----- retreive the preference for 'logTimeInDays' -----#
   	if @user.pref[:logTimeInDays].present?
 		@logTimeInDays = @user.pref[:logTimeInDays] 
 		if @user.pref[:exceedLogTimeLimit].present?
@@ -439,7 +444,10 @@ end
 			projIds = "#{(params[:project_id] || (!params[:project_ids].blank? ? params[:project_ids].join(",") : '') || projectids)}"
 			projCond = !projIds.blank? ? "AND #{Issue.table_name}.project_id in (#{projIds})" : ""			
 			if !params[:tracker_id].blank? && params[:tracker_id] != ["0"]	&& params[:term].blank?
-				cond = ["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.updated_on >= ?) AND  #{Issue.table_name}.tracker_id in ( ?) #{issueAssignToUsrCond}) #{projCond}", false, @startday,params[:tracker_id]]			
+				#before modification
+				#cond = ["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.updated_on >= ?) AND  #{Issue.table_name}.tracker_id in ( ?) #{issueAssignToUsrCond}) #{projCond}", false, @startday,params[:tracker_id]]			
+				#modification by Soniaz - dont want to see closed issue at all on timesheet
+				cond = ["((#{IssueStatus.table_name}.is_closed = ? ) AND  #{Issue.table_name}.tracker_id in ( ?) #{issueAssignToUsrCond}) #{projCond}", false, params[:tracker_id]]
 			elsif !params[:term].blank? 
 				if subjectPart.present?
 					if subjectPart.match(/^\d+$/)					
@@ -449,7 +457,10 @@ end
 					end				
 				 end  
 			else		
-				cond =["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.updated_on >= ?) #{issueAssignToUsrCond} #{trackerIDCond}) #{projCond}", false, @startday]
+				#before modification
+				#cond =["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.updated_on >= ?) #{issueAssignToUsrCond} #{trackerIDCond}) #{projCond}", false, @startday]
+				#modification by Soniaz - dont want to see closed issue at all on timesheet
+				cond =["((#{IssueStatus.table_name}.is_closed = ? ) #{issueAssignToUsrCond} #{trackerIDCond}) #{projCond}", false]
 			end	
 			
 			#issues= Issue.find_all_by_project_id(params[:project_id] || params[:project_ids] || projectids,
@@ -804,6 +815,7 @@ private
 	
 	def gatherEntries
  		entryHash = params[:time_entry]
+
 		@entries ||= Array.new
 		custom_values = Hash.new
 		#setup
@@ -816,6 +828,7 @@ private
 		unless entryHash.nil?
 			entryHash.each_with_index do |entry, i|
 				if !entry['project_id'].blank?
+
 					hours = params['hours' + (i+1).to_s()]					
 					ids = params['ids' + (i+1).to_s()]
 					comments = params['comments' + (i+1).to_s()]
@@ -873,9 +886,9 @@ private
 							@teEntrydisabled=true
 						end			
 					end
-				end
-			end
-		end
+				end #if !entry['project_id'].blank?
+			end #entryHash.each_with_index do |entry, i|
+		end #unless entryHash.nil?
   end
   
 	def gatherWkCustomFields(wktime)
@@ -1317,17 +1330,30 @@ private
                 else
 					if (!params[:issue_assign_user].blank? && params[:issue_assign_user].to_i == 1) 						
 						#allIssues = Issue.find_all_by_project_id(project_id,:conditions =>["(#{Issue.table_name}.assigned_to_id= ? OR #{Issue.table_name}.author_id= ?) #{trackerids}", params[:user_id],params[:user_id]]) 
+						
 						allIssues = Issue.where(["((#{Issue.table_name}.assigned_to_id= ? OR #{Issue.table_name}.author_id= ?) #{trackerids}) and #{Issue.table_name}.project_id in ( #{project_id})", params[:user_id],params[:user_id]])
 					else
 						#allIssues = Issue.find_all_by_project_id(project_id)
 						allIssues = Issue.where(:project_id => project_id)						
 					end
                 end
+
+                #Soniaz add dont want to show closed_issue
+                allIssues = allIssues.select {|i| i.status.is_closed == false } 
           	else
+          		#this case is when the plugin settings parameters: 'Include Previous Week's Closed Issues' is unchecked
                 if !Setting.plugin_redmine_wktime[getTFSettingName()].blank? &&  Setting.plugin_redmine_wktime[getTFSettingName()] != ["0"] && params[:tracker_ids].blank?
-                     cond = ["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.updated_on >= ?) AND  #{Issue.table_name}.tracker_id in ( ?) #{issueAssignToUsrCond}) and #{Issue.table_name}.project_id in ( #{project_id} )",false, @startday,Setting.plugin_redmine_wktime[getTFSettingName()]]
+                    #before modification - original from master
+                    #cond = ["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.updated_on >= ?) AND  #{Issue.table_name}.tracker_id in ( ?) #{issueAssignToUsrCond}) and #{Issue.table_name}.project_id in ( #{project_id} )",false, @startday,Setting.plugin_redmine_wktime[getTFSettingName()]]
+                	#modification by Soniaz - dont want to see closed issue at all on timesheet
+                	cond = ["((#{IssueStatus.table_name}.is_closed = ? ) AND  #{Issue.table_name}.tracker_id in ( ?) #{issueAssignToUsrCond}) and #{Issue.table_name}.project_id in ( #{project_id} )",false,Setting.plugin_redmine_wktime[getTFSettingName()]]
+                
                 else
-                    cond =["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.updated_on >= ?) #{issueAssignToUsrCond} #{trackerids}) and #{Issue.table_name}.project_id in ( #{project_id})",false, @startday]
+                	#before modification - original from master
+                    #cond =["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.updated_on >= ?) #{issueAssignToUsrCond} #{trackerids}) and #{Issue.table_name}.project_id in ( #{project_id})",false, @startday]
+               		#modification by Soniaz - dont want to see closed issue at all on timesheet
+               		cond =["((#{IssueStatus.table_name}.is_closed = ? ) #{issueAssignToUsrCond} #{trackerids}) and #{Issue.table_name}.project_id in ( #{project_id})",false]
+      
                 end
                 #allIssues = Issue.find_all_by_project_id(project_id, :conditions => cond, :include => :status)				
 				allIssues = Issue.includes(:status).references(:status).where(cond)

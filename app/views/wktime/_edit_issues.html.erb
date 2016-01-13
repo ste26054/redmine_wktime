@@ -24,6 +24,10 @@ user = nil
 </thead>
 <tbody>
 
+<%#add by Soniaz - to lock closed issue modification on the timesheet %>
+<% real_editable = @editable %>
+<% issue_closed = false %>
+
 <% unless entries.blank?
 	col_values = []
 	matrix_values = []
@@ -33,8 +37,6 @@ user = nil
 			issueWritten = false
 			rows.each.with_index do |entry, i|
 %>
-
-				
 				<% if !entry.blank? %>	 
 				<%- user =	entry.user %>	
 
@@ -43,7 +45,17 @@ user = nil
 						<% # close the previously opened row first %>
 						<%= render :partial => 'edit_hours', :locals => {:entry => nil, :isTemplate => false,
 							:padAt => 'end', :padTill => 8}%>
-					
+						
+							<%#add by Soniaz - to lock closed issue modification on the timesheet %>
+							<% if entry.issue.status.is_closed %>
+								<% issue_closed = true %>
+								<% @editable = false %>
+							<% else %>
+								<% issue_closed = false %>
+								<% @editable = real_editable %>
+							<% end %>
+
+
 						<%= render :partial => 'edit_issues2', :locals => {:entry => entry, :isTemplate => false}%>		
 						<% issueWritten = true %>
 					<% end %>
@@ -72,6 +84,9 @@ user = nil
 	<%= render :partial => 'edit_hours', :locals => {:entry => nil, :isTemplate => false,
 		:padAt => 'end', :padTill => 8}%>
 
+	<%#add by Soniaz - to lock closed issue modification on the timesheet %>
+	<% @editable = real_editable %>
+	
 	<!-- row for putting the total -->
 	<tr>
 	<td class="project"></td>
