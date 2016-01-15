@@ -11,7 +11,7 @@
 	<th><%=l(:field_user)%></th>
 	<td><%=h @user.login %>
 		<%=h hidden_field_tag('user_id', @user.id) %>
-		<%=h hidden_field_tag('userWorkingHoursId', @user.weekly_working_hours) %>
+		<%=h hidden_field_tag('userWorkingHoursId', @user.actual_weekly_working_hours) %>
 		<%=h hidden_field_tag('logTimeInDaysId', @user.pref[:logTimeInDays]) %>
 		<%=h hidden_field_tag('exceedLogTimeLimitId', @user.pref[:exceedLogTimeLimit]) %>
 		<%=h hidden_field_tag('editUrlId', "edit?startday=#{@startday}&tab=#{params[:tab]}&user_id=#{@user.id}") %>

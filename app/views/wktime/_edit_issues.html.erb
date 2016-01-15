@@ -106,7 +106,7 @@ user = nil
 				<% if !controller.logInDaysCondition(@user.id) %> 
 				style="display: none;"<% else %> style="display: initial; "
 				<% end %>
-				> <%= ("%.2f" % ((th*5)/@user.weekly_working_hours)) %>  </span> <% if params[:controller] == "wktime" %>
+				> <%= ("%.2f" % ((th*5)/@user.actual_weekly_working_hours)) %>  </span> <% if params[:controller] == "wktime" %>
 			<% if controller.logInDaysCondition(@user.id) %> day<% else %> hours<% end %><% end %>
 		</td>
 	<% end %>
@@ -115,7 +115,7 @@ user = nil
 				style="display: none;"<% else %> style="display: initial; "
 				<% end %>> <%= ("%.2f" % @total_hours) %> </span><span id="total_days" <% if controller.logInDaysCondition(@user.id) %> 
 				style="display: initial;"<% else %> style="display: none; "
-				<% end %>><%= ("%.2f" % ((@total_hours*5)/@user.weekly_working_hours)) %>
+				<% end %>><%= ("%.2f" % ((@total_hours*5)/@user.actual_weekly_working_hours)) %>
 	</span><% if params[:controller] == "wktime" %><% if controller.logInDaysCondition(@user.id) %> days<% else %> hours<% end %><% end %> </b>
 	<%=h hidden_field_tag('total', ("%.2f" % @total_hours) ) %>
 	<%=h hidden_field_tag('unit', currencySym) %>

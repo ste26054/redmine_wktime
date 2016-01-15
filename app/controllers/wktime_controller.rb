@@ -619,10 +619,10 @@ end
 	end
 	
 	def total_all_days
-		#((total*5)/User.current.weekly_working_hours)
+		#((total*5)/User.current.actual_weekly_working_hours)
 		 result = 0
 		if @entries.count > 0
-			result = @entries.map{ |entry| (entry.hours * 5)/User.find(entry.user_id).weekly_working_hours }.sum.round(2)
+			result = @entries.map{ |entry| (entry.hours * 5)/entry.user.actual_weekly_working_hours }.sum.round(2)
 			return result
 		else
 			return result
