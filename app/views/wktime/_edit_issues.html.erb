@@ -47,7 +47,7 @@ user = nil
 							:padAt => 'end', :padTill => 8}%>
 						
 							<%#add by Soniaz - to lock closed issue modification on the timesheet %>
-							<% if entry.issue.status.is_closed %>
+							<% if !entry.issue.nil? && entry.issue.status.is_closed %>
 								<% issue_closed = true %>
 								<% @editable = false %>
 							<% else %>
