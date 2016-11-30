@@ -3,16 +3,11 @@
 <table class="list time-entries">
 <thead>
 <tr>
-<th class="checkbox hide-when-print">
-  <%= link_to image_tag('toggle_check.png'), 
-    {}, 
-    :onclick => 'toggleIssuesSelection(this); return false;', 
-    :title => "#{l(:button_check_all)}/#{l(:button_uncheck_all)}" %>
-</th>
 <th><%= l(:field_start_date) %></th>
 <th><%= l(:field_user) %></th>
 <th><% if controller.logInDaysCondition(User.current.id) %> Days <% else %> <%= controller.getLabelforSpField %><% end %></th>
 <th><%= l(:field_status) %></th>
+<th><%= l(:field_status_modified_by) %></th>
 <th></th>
 </tr>
 </thead>
@@ -20,19 +15,20 @@
 <% @entries.each do |entry| -%>
 
 <tr class="time-entry <%= cycle("odd", "even") %>">
-<td class="checkbox hide-when-print"><%= check_box_tag("ids[]", entry.spent_on, false, :id => nil) %></td>
-
 <td class="start_date"><%=h format_date(entry.spent_on) %></td>
-<td class="user"><%=h entry.user.login %></td>
+
+<td class="user"><%=h entry.user.name %></td>
 
 <td  class="user"><% if controller.logInDaysCondition(User.current.id) %><%- result=(5*entry.hours)/entry.user.actual_weekly_working_hours %><%= ("%.2f" % result) %> <% else %> <%= controller.getUnit(entry) %>&nbsp;<%=h html_hours("%.2f" % entry.hours) %> <% end %></td>
 
 <td class="status"><%=h statusString(entry.status) unless entry.status.blank? %></td>
+<td class="status_updater"><%=h entry.status_updater %></td>
 <td align="center">
 <%  #if entry.editable_by?(User.current) %>
     <%= link_to image_tag('edit.png'), {:controller => controller.controller_name, :action => 'edit', :startday => entry.spent_on, :user_id => entry.user_id, :tab => controller.controller_name},
                                        :title => l(:button_edit) %>
-	<% if entry.status.blank? || entry.status == 'n' || entry.status == 'r' %>
+                                       
+	<% if controller.controller_name == "wkexpense" && (entry.status.blank? || entry.status == 'n' || entry.status == 'r') %>
 		<%= link_to image_tag('delete.png'), {:controller => controller.controller_name, :action => 'destroy', :startday => entry.spent_on, :user_id => entry.user_id, :tab => controller.controller_name},
 											 :data => {:confirm => l(:text_are_you_sure)},
 											 :method => :delete,

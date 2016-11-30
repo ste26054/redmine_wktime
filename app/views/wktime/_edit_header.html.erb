@@ -9,7 +9,7 @@
 <table>
 <tr>
 	<th><%=l(:field_user)%></th>
-	<td><%=h @user.login %>
+	<td><%=h @user.name %>
 		<%=h hidden_field_tag('user_id', @user.id) %>
 		<%=h hidden_field_tag('userWorkingHoursId', @user.actual_weekly_working_hours) %>
 		<%=h hidden_field_tag('logTimeInDaysId', @user.pref[:logTimeInDays]) %>

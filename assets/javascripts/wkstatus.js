@@ -14,7 +14,7 @@ $(document).ready(function(){
 	if(txtEntryDate!=null){		
 		showEntryWarning(txtEntryDate.value);
 		txtEntryDate.onchange=function(){showEntryWarning(this.value)};	
-	}
+	}	
 });
 
 function showEntryWarning(entrydate){
@@ -32,10 +32,22 @@ function showEntryWarning(entrydate){
 }
 
 function showMessage(data,divID){							
-	if(data!=null && ('s'== data || 'a'== data)){
+	if(data!=null && ('s'== data || 'a'== data || 'l'== data)){
 		divID.style.display = 'block';
+		 $("form.edit_time_entry p :input").prop("disabled", true);
+		 $("form.edit_time_entry p :input").prop("readOnly", true);
+		 $("form.edit_time_entry :input[type=submit]").hide();
+		 if ($("form.edit_time_entry p .ui-datepicker-trigger").length > 0){
+			$("form.edit_time_entry p .ui-datepicker-trigger").hide();
+		 }
 	}
 	else{				
 		divID.style.display ='none';
+		$("form.edit_time_entry p :input").prop("disabled", false);
+		 $("form.edit_time_entry p :input").prop("readOnly", false);
+		 $("form.edit_time_entry :input[type=submit]").show();
+		 if ($("form.edit_time_entry p .ui-datepicker-trigger").length > 0){
+			$("form.edit_time_entry p .ui-datepicker-trigger").show();
+		 }
 	}	
 }
