@@ -1509,7 +1509,7 @@ private
 		query = query + "and tmp3.status <> 'e') "
 		query = query + "OR (tmp3.spent_on > '#{current_date}' and tmp3.status <> 'e'))) "
 		if !status.blank?
-			query += " and  tmp3.status in ('#{status.join("','")}') "
+			query += " and  tmp3.status in ('#{[status].join("','")}') "
 		end
 		query
 	end
