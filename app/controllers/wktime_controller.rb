@@ -346,18 +346,19 @@ helper :custom_fields
 			flash[:error] = l(:error_time_entry_delete)
 			redirect_to :action => 'index' , :tab => params[:tab] 			
 		else
-			deletable = @wktime.nil? || @wktime.status == 'n' || @wktime.status == 'r'
-			if deletable
-				@entries = findEntries()
-				@entries.each do |entry|
-					entry.destroy()
-				end
-				cond = getCondition('begin_date', @user.id, @startday)
-				deleteWkEntity(cond)
-			end
+			# deletable = @wktime.nil? || @wktime.status == 'n' || @wktime.status == 'r'
+			# if deletable
+			# 	@entries = findEntries()
+			# 	@entries.each do |entry|
+			# 		entry.destroy()
+			# 	end
+			# 	cond = getCondition('begin_date', @user.id, @startday)
+			# 	deleteWkEntity(cond)
+			# end
 			respond_to do |format|
-				format.html {				
-					flash[:notice] = l(:notice_successful_delete)
+				format.html {	
+					flash[:error] = "Cannot delete the whole timesheet"			
+					#flash[:notice] = l(:notice_successful_delete)
 					redirect_back_or_default :action => 'index', :tab => params[:tab]
 				} 
 				format.api  {
