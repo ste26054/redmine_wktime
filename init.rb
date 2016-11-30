@@ -1,4 +1,5 @@
 require 'redmine'
+require 'redmine_wktime'
 require_dependency 'custom_fields_helper'
 
 module WktimeHelperPatch
@@ -224,15 +225,15 @@ Rails.configuration.to_prepare do
 end
 
 class WktimeHook < Redmine::Hook::ViewListener
-	def controller_timelog_edit_before_save(context={ })			
-		if !context[:time_entry].hours.blank? && !context[:time_entry].activity_id.blank?
-			wktime_helper = Object.new.extend(WktimeHelper)				
-			status = wktime_helper.getTimeEntryStatus(context[:time_entry].spent_on,context[:time_entry].user_id)		
-			if !status.blank? && ('a' == status || 's' == status || 'l' == status)					
-				 raise "#{l(:label_warning_wktime_time_entry)}"
-			end			
-		end	
-	end
+	# def controller_timelog_edit_before_save(context={ })			
+	# 	if !context[:time_entry].hours.blank? && !context[:time_entry].activity_id.blank?
+	# 		wktime_helper = Object.new.extend(WktimeHelper)				
+	# 		status = wktime_helper.getTimeEntryStatus(context[:time_entry].spent_on,context[:time_entry].user_id)		
+	# 		if !status.blank? && ('a' == status || 's' == status || 'l' == status)					
+	# 			 raise "#{l(:label_warning_wktime_time_entry)}"
+	# 		end			
+	# 	end	
+	# end
 	
 	def view_layouts_base_html_head(context={})	
 		javascript_include_tag('wkstatus', :plugin => 'redmine_wktime') + "\n" +
@@ -241,6 +242,7 @@ class WktimeHook < Redmine::Hook::ViewListener
 	
 	def view_timelog_edit_form_bottom(context={ })		
 		showWarningMsg(context[:request],context[:time_entry].user_id)
+		
 	end
 	
 	def view_issues_edit_notes_bottom(context={})	
@@ -250,9 +252,17 @@ class WktimeHook < Redmine::Hook::ViewListener
 	def showWarningMsg(req,user_id)		
 		wktime_helper = Object.new.extend(WktimeHelper)
 		host_with_subdir = wktime_helper.getHostAndDir(req)	
+
 		"<div id='divError'><font color='red'>#{l(:label_warning_wktime_time_entry)}</font>	
 			<input type='hidden' id='getstatus_url' value='#{url_for(:controller => 'wktime', :action => 'getStatus', :host => host_with_subdir, :only_path => true, :user_id => user_id)}'>	
-		</div>"		
+		</div>"
+		 # '<script type="text/javascript">
+		 # 		$(document).ready(function(){
+
+			# 		$("form.edit_time_entry :input[type=submit]").hide();
+
+		 # 		});
+		 # </script>'		
 	end
 	
 	# Added expense report link in redmine core 'projects/show.html' using hook
