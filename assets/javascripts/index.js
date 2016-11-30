@@ -1,4 +1,4 @@
-var wktimeIndexUrl,wkexpIndexUrl;
+var wktimeIndexUrl,wkexpIndexUrl;wkuserprefIndexUrl;
 var no_user ="";
 var grpUrl="";
 var userUrl="";
@@ -51,8 +51,10 @@ function updateUserDD(itemStr, dropdown, userid, needBlankOption, skipFirst)
 
 $(document).ready(function()
 {
-	changeProp('tab-wktime',wktimeIndexUrl);
-	changeProp('tab-wkexpense',wkexpIndexUrl);
+	
+	changeProp('tab-wktime', wktimeIndexUrl);
+	changeProp('tab-wkexpense', wkexpIndexUrl);
+	changeProp('tab-wkuserpref', wkuserprefIndexUrl);
 });
 
 

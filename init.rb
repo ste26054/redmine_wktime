@@ -138,6 +138,9 @@ IssuesController.send(:include, IssuesControllerPatch)
 TimelogController.send(:include, TimelogControllerPatch)
 
 Redmine::Plugin.register :redmine_wktime do
+	requires_redmine_plugin :redmine_leaves_holidays, :version_or_higher => '0.2'
+	requires_redmine :version_or_higher => "3.0.0"
+
   name 'Time & Expense'
   author 'Adhi Software Pvt Ltd'
   description 'This plugin is for entering Time & Expense'
@@ -155,6 +158,7 @@ Redmine::Plugin.register :redmine_wktime do
 			 'wktime_min_hour_day' => '0',
 			 'wktime_restr_max_hour' => '0',
 			 'wktime_max_hour_day' => '8',
+			 'wktime_log_in_days_granularity' => '0.5',
 			 'wktime_page_width' => '210',
 			 'wktime_page_height' => '297',
 			 'wktime_margin_top' => '20',
@@ -191,7 +195,8 @@ Redmine::Plugin.register :redmine_wktime do
   menu :top_menu, :wkTime, { :controller => 'wktime', :action => 'index' }, :caption => :label_te, :if => Proc.new { Object.new.extend(WktimeHelper).checkViewPermission } 	
   project_module :time_tracking do
 	permission :approve_time_entries,  {:wktime => [:update]}, :require => :member	
-  end
+	permission :manage_log_time_unit, {:wktime => [:update]}, :require => :member	
+	end
 
 end
 

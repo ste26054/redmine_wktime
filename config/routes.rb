@@ -1,3 +1,5 @@
+  
+  #For wktime
   get 'wktime/index', :to => 'wktime#index'
 
   get 'wktime/getissues', :to => 'wktime#getissues'
@@ -25,6 +27,8 @@
   delete 'wktime/deleteEntries', :to => 'wktime#deleteEntries'
   
   get 'wktime/testapi', :to => 'wktime#testapi' 
+
+
   
   #For Weekly expenses
   
@@ -68,4 +72,12 @@
 		end
 	end   
   end
-  
+
+                  #added by Soniaz
+  get 'wktime/log_in_days', :to => 'wktime#log_in_days'
+  get 'wktime/limit_log_time_entry', :to => 'wktime#limit_log_time_entry' 
+
+  #for wkuserpref 
+  get 'wkuserpref/index', :to => 'wkuserpref#index'
+  get 'wkuserpref/log_in_days', :to => 'wkuserpref#log_in_days'
+  get 'wkuserpref/limit_log_time_entry', :to => 'wkuserpref#limit_log_time_entry'

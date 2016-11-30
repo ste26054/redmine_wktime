@@ -11,12 +11,16 @@
 	<th><%=l(:field_user)%></th>
 	<td><%=h @user.name %>
 		<%=h hidden_field_tag('user_id', @user.id) %>
+		<%=h hidden_field_tag('userWorkingHoursId', @user.actual_weekly_working_hours) %>
+		<%=h hidden_field_tag('logTimeInDaysId', @user.pref[:logTimeInDays]) %>
+		<%=h hidden_field_tag('exceedLogTimeLimitId', @user.pref[:exceedLogTimeLimit]) %>
+		<%=h hidden_field_tag('editUrlId', "edit?startday=#{@startday}&tab=#{params[:tab]}&user_id=#{@user.id}") %>
 	</td>
 	<td width="30px"></td>
 	<% if @editable %>
 		<% if !Setting.plugin_redmine_wktime['wktime_enter_issue_as'].blank? && Setting.plugin_redmine_wktime['wktime_enter_issue_as'].to_i == 1 %>
 				<th><%= "#{l(:label_wk_enter_issue_id)}/#{l(:field_subject)}" %></th>
-				<td>
+				<td> 
 					<%= check_box_tag('enter_issue_id', 1, (!params[:enter_issue_id].blank? && params[:enter_issue_id].to_i == 1), 
 					:onclick => "enterIssueIdorAssignUser();") %>
 				</td>
@@ -44,7 +48,7 @@
 	<td>
 		<%=h statusString(@wktime.status) unless @wktime.blank? %>
 	</td>
-	<td width="30px"></td>
+
 	<% status = @wktime.status unless @wktime.blank? %>	
 	<% if controller.filterTrackerVisible && 'a' != status && 's' != status && (params[:enter_issue_id].blank? || (!params[:enter_issue_id].blank? && !params[:enter_issue_id].to_i == 1)) %>		
 	<%

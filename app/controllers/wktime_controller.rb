@@ -12,6 +12,8 @@ before_filter :check_log_time_redirect, :only => [:new]
 accept_api_auth :index, :edit, :update, :destroy, :deleteEntries
 
 helper :custom_fields
+
+
  
   def index
 	set_filter_session
@@ -32,9 +34,12 @@ helper :custom_fields
 	end
 	set_user_projects
 	if (!@manage_view_spenttime_projects.blank? && @manage_view_spenttime_projects.size > 0)
-		@selected_project = getSelectedProject(@manage_view_spenttime_projects, false)		 
+
+		@selected_project = getSelectedProject(@manage_view_spenttime_projects, false)
 	end
-	setMembers
+	
+	setMembers 
+
 	ids = nil		
 	if user_id.blank?
 		#ids = is_member_of_any_project() ? User.current.id.to_s : '0'
@@ -102,9 +107,45 @@ helper :custom_fields
       }
 	  format.api
     end
+
+
   end
 
+def logInDaysCondition(user_id)
+	user_here = User.find(user_id)
+	if user_here.pref[:logTimeInDays].present?
+		if  user_here.pref[:logTimeInDays] == "1" && params[:controller] == "wktime"
+			if user_here.pref[:exceedLogTimeLimit].present?
+				@exceedLogTimeLimit = user_here.pref[:exceedLogTimeLimit] 
+			else
+				@exceedLogTimeLimit = "0" 
+			end
+			return true
+		else
+			return false
+		end
+	else
+		return false
+	end
+	
+end
+
   def edit
+  	#Soniaz contribution-----add preference to user : for the logTime in days-----#
+  	if @user.pref[:logTimeInDays].present?
+		@logTimeInDays = @user.pref[:logTimeInDays] 
+		if @user.pref[:exceedLogTimeLimit].present?
+			@exceedLogTimeLimit = @user.pref[:exceedLogTimeLimit] 
+		else
+			@exceedLogTimeLimit = "0" 
+		end
+	else
+		@logTimeInDays = "0" 
+		@exceedLogTimeLimit = "0" 
+	end
+	
+	#-------#
+
 	@prev_template = false
 	@new_custom_field_values = getNewCustomField
 	setup
@@ -161,15 +202,19 @@ helper :custom_fields
 							Setting.plugin_redmine_wktime['wktime_use_approval_system'].to_i == 1)
 						
 	@wktime.transaction do
-		begin				
+		begin	
+
+
 			if errorMsg.blank? && (!params[:wktime_save].blank? || !params[:wktime_save_continue].blank? ||
-				(!params[:wktime_submit].blank? && @wkvalidEntry && useApprovalSystem))		
+				(!params[:wktime_submit].blank? && @wkvalidEntry && useApprovalSystem))	
+
 				if !@wktime.nil? && ( @wktime.status == 'n' || @wktime.status == 'r')			
 					@wktime.status = :n
 					# save each entry
 					entrycount=0
 					entrynilcount=0
-					@entries.each do |entry|					
+
+					@entries.each do |entry|	
 						entrycount += 1
 						entrynilcount += 1 if (entry.hours).blank?
 						allowSave = true
@@ -206,6 +251,7 @@ helper :custom_fields
 				setTotal(@wktime,total)
 				#if (errorMsg.blank? && total > 0.0)
 				errorMsg = 	updateWktime if (errorMsg.blank? && ((!@entries.blank? && entrycount!=entrynilcount) || @teEntrydisabled))	
+
 			end
 
 			if errorMsg.blank? && useApprovalSystem
@@ -264,7 +310,7 @@ helper :custom_fields
 				flash[:notice] = respMsg
 				#redirect_back_or_default :action => 'index'
 				#redirect_to :action => 'index' , :tab => params[:tab]
-                if params[:wktime_save_continue] 
+                if params[:wktime_save_continue]
 				      redirect_to :action => 'edit' , :startday => !@entries.present? ? @startday  : @startday+ 7, :user_id => @user.id, :project_id => params[:project_id]  
 				else                                                                                                
 				      redirect_to :action => 'index' , :tab => params[:tab]                   
@@ -288,6 +334,21 @@ helper :custom_fields
 			end
 		}
 	end  
+
+	#Soniaz contribution----- retreive the preference for 'logTimeInDays' -----#
+  	if @user.pref[:logTimeInDays].present?
+		@logTimeInDays = @user.pref[:logTimeInDays] 
+		if @user.pref[:exceedLogTimeLimit].present?
+			@exceedLogTimeLimit = @user.pref[:exceedLogTimeLimit] 
+		else
+			@exceedLogTimeLimit = "0" 
+		end
+	else
+		@logTimeInDays = "0" 
+		@exceedLogTimeLimit = "0" 
+	end
+	#--------------#
+
   end
 	
 	def deleterow	
@@ -436,7 +497,12 @@ helper :custom_fields
 			projIds = "#{(params[:project_id] || (!params[:project_ids].blank? ? params[:project_ids].join(",") : '') || projectids)}"
 			projCond = !projIds.blank? ? "AND #{Issue.table_name}.project_id in (#{projIds})" : ""			
 			if !params[:tracker_id].blank? && params[:tracker_id] != ["0"]	&& params[:term].blank?
-				cond = ["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.closed_on >= ?) AND  #{Issue.table_name}.tracker_id in ( ?) #{issueAssignToUsrCond}) #{projCond}", false, @startday,params[:tracker_id]]			
+
+				#before modification
+				#cond = ["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.updated_on >= ?) AND  #{Issue.table_name}.tracker_id in ( ?) #{issueAssignToUsrCond}) #{projCond}", false, @startday,params[:tracker_id]]			
+				#modification by Soniaz - dont want to see closed issue at all on timesheet
+				cond = ["((#{IssueStatus.table_name}.is_closed = ? ) AND  #{Issue.table_name}.tracker_id in ( ?) #{issueAssignToUsrCond}) #{projCond}", false, params[:tracker_id]]
+
 			elsif !params[:term].blank? 
 				if subjectPart.present?
 					if subjectPart.match(/^\d+$/)					
@@ -446,7 +512,12 @@ helper :custom_fields
 					end				
 				 end  
 			else		
-				cond =["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.closed_on >= ?) #{issueAssignToUsrCond} #{trackerIDCond}) #{projCond}", false, @startday]
+
+				#before modification
+				#cond =["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.updated_on >= ?) #{issueAssignToUsrCond} #{trackerIDCond}) #{projCond}", false, @startday]
+				#modification by Soniaz - dont want to see closed issue at all on timesheet
+				cond =["((#{IssueStatus.table_name}.is_closed = ? ) #{issueAssignToUsrCond} #{trackerIDCond}) #{projCond}", false]
+
 			end	
 			
 			issues = Issue.includes(:status).references(:status).where(cond).order('project_id')
@@ -612,11 +683,28 @@ helper :custom_fields
 		Setting.plugin_redmine_wktime['wktime_restr_min_hour'].to_i == 1 ?  
 		(Setting.plugin_redmine_wktime['wktime_min_hour_day'].blank? ? 0 : Setting.plugin_redmine_wktime['wktime_min_hour_day']) : 0
 	end
-	
+
+	#added for logging time in days : its granularity
+	def dayGranularity
+		(Setting.plugin_redmine_wktime['wktime_log_in_days_granularity'].blank? ? 0.5 : Setting.plugin_redmine_wktime['wktime_log_in_days_granularity'])
+	end
+
 	def total_all(total)
 		html_hours(l_hours(total))
 	end
 	
+	def total_all_days
+		#((total*5)/User.current.actual_weekly_working_hours)
+		 result = 0
+		if @entries.count > 0
+			result = @entries.map{ |entry| (entry.hours * 5)/entry.user.actual_weekly_working_hours }.sum.round(2)
+			return result
+		else
+			return result
+		end
+
+	end
+
 	 def getStatus	
 		status = getTimeEntryStatus(params[:startDate].to_date,params[:user_id])
 		respond_to do |format|
@@ -809,6 +897,7 @@ private
 	
 	def gatherEntries
  		entryHash = params[:time_entry]
+
 		@entries ||= Array.new
 		custom_values = Hash.new
 		#setup
@@ -821,6 +910,7 @@ private
 		unless entryHash.nil?
 			entryHash.each_with_index do |entry, i|
 				if !entry['project_id'].blank?
+
 					hours = params['hours' + (i+1).to_s()]					
 					ids = params['ids' + (i+1).to_s()]
 					comments = params['comments' + (i+1).to_s()]
@@ -879,9 +969,9 @@ private
 							@teEntrydisabled=true
 						end			
 					end
-				end
-			end
-		end
+				end #if !entry['project_id'].blank?
+			end #entryHash.each_with_index do |entry, i|
+		end #unless entryHash.nil?
   end
   
 	def gatherWkCustomFields(wktime)
@@ -1215,8 +1305,10 @@ private
 			hookProjMem = call_hook(:controller_project_member, {  :project_id => project_id})
 			if !hookProjMem.blank?
 				projMem = hookProjMem[0].blank? ? [] : hookProjMem[0]
-			else				
-				projMem = @selected_project.members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC") if !@selected_project.blank?
+
+			else
+				projMem = @selected_project.blank? ? [] : @selected_project.members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC").distinct("#{User.table_name}.id")
+
 			end				
 			@members = projMem.collect{|m| [ m.name, m.user_id ] } if !projMem.blank?
 		elsif filter_type == '2'
@@ -1336,17 +1428,31 @@ private
                 else
 					if (!params[:issue_assign_user].blank? && params[:issue_assign_user].to_i == 1) 						
 						#allIssues = Issue.find_all_by_project_id(project_id,:conditions =>["(#{Issue.table_name}.assigned_to_id= ? OR #{Issue.table_name}.author_id= ?) #{trackerids}", params[:user_id],params[:user_id]]) 
+						
 						allIssues = Issue.where(["((#{Issue.table_name}.assigned_to_id= ? OR #{Issue.table_name}.author_id= ?) #{trackerids}) and #{Issue.table_name}.project_id in ( #{project_id})", params[:user_id],params[:user_id]])
 					else
 						#allIssues = Issue.find_all_by_project_id(project_id)
 						allIssues = Issue.where(:project_id => project_id)						
 					end
                 end
+
+                #Soniaz add dont want to show closed_issue
+                allIssues = allIssues.select {|i| i.status.is_closed == false } 
           	else
+          		#this case is when the plugin settings parameters: 'Include Previous Week's Closed Issues' is unchecked
                 if !Setting.plugin_redmine_wktime[getTFSettingName()].blank? &&  Setting.plugin_redmine_wktime[getTFSettingName()] != ["0"] && params[:tracker_ids].blank?
-                     cond = ["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.closed_on >= ?) AND  #{Issue.table_name}.tracker_id in ( ?) #{issueAssignToUsrCond}) and #{Issue.table_name}.project_id in ( #{project_id} )",false, @startday,Setting.plugin_redmine_wktime[getTFSettingName()]]
+
+                    #before modification - original from master
+                    #cond = ["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.updated_on >= ?) AND  #{Issue.table_name}.tracker_id in ( ?) #{issueAssignToUsrCond}) and #{Issue.table_name}.project_id in ( #{project_id} )",false, @startday,Setting.plugin_redmine_wktime[getTFSettingName()]]
+                	#modification by Soniaz - dont want to see closed issue at all on timesheet
+                	cond = ["((#{IssueStatus.table_name}.is_closed = ? ) AND  #{Issue.table_name}.tracker_id in ( ?) #{issueAssignToUsrCond}) and #{Issue.table_name}.project_id in ( #{project_id} )",false,Setting.plugin_redmine_wktime[getTFSettingName()]]
+                
                 else
-                    cond =["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.closed_on >= ?) #{issueAssignToUsrCond} #{trackerids}) and #{Issue.table_name}.project_id in ( #{project_id})",false, @startday]
+                	#before modification - original from master
+                    #cond =["((#{IssueStatus.table_name}.is_closed = ? OR #{Issue.table_name}.updated_on >= ?) #{issueAssignToUsrCond} #{trackerids}) and #{Issue.table_name}.project_id in ( #{project_id})",false, @startday]
+               		#modification by Soniaz - dont want to see closed issue at all on timesheet
+               		cond =["((#{IssueStatus.table_name}.is_closed = ? ) #{issueAssignToUsrCond} #{trackerids}) and #{Issue.table_name}.project_id in ( #{project_id})",false]
+      
                 end
                 #allIssues = Issue.find_all_by_project_id(project_id, :conditions => cond, :include => :status)				
 				allIssues = Issue.includes(:status).references(:status).where(cond)
@@ -1391,6 +1497,7 @@ private
 		@unit = nil
 		result = TimeEntry.find_by_sql("select sum(v2." + spField + ") as " + spField + " from (" + query + ") as v2")		
 		@total_hours = result[0].hours
+		
 	end
 	
 	def getWhereCond(status)
@@ -1579,9 +1686,15 @@ private
 		elsif !session[:wktimes].blank?
 			selected_proj_id = session[:wktimes][:project_id]
 		end
-		if !selected_proj_id.blank? && !setFirstProj #( !isAccountUser || !projList.blank? )
-			sel_project = projList.select{ |proj| proj.id == selected_proj_id.to_i } if !projList.blank?	
-			selected_project ||= sel_project[0] if !sel_project.blank?
+
+		if !selected_proj_id.blank?
+			sel_project = projList.select{ |proj| proj.id == selected_proj_id.to_i }
+			if !sel_project.blank?
+				selected_project ||= sel_project[0]
+			else
+				selected_project ||= projList[0] if !projList.blank?
+			end
+
 		else
 			selected_project ||= projList[0] if !projList.blank?
 		end

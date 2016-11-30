@@ -94,61 +94,61 @@
 
 <%= form_tag({:controller => controller.controller_name, :action => 'update'}, :method => :post, :id => 'wktime_edit') do %>
 
-<h2><%= l(:label_wktime) %></h2>
-<%=h hidden_field_tag('tab', "#{controller_name}") %>
+	<h2><%= l(:label_wktime) %></h2>
+	<%=h hidden_field_tag('tab', "#{controller_name}") %>
 
-<%= render :partial => 'edit_header' %>
+	<%= render :partial => 'edit_header' %>
 
-<% if !@wktime.blank? && @wktime.status == 'r' && !@wktime.notes.blank? %>
-	<tr>
-	<th><%=l(:label_wk_reject_reason)%></th>
-	<td><%=h @wktime.notes %>
-	</td>
-	</tr>
-<% end %>
+	<% if !@wktime.blank? && @wktime.status == 'r' && !@wktime.notes.blank? %>
+		<tr>
+		<th><%=l(:label_wk_reject_reason)%></th>
+		<td><%=h @wktime.notes %>
+		</td>
+		</tr>
+	<% end %>
 
-			<% custom_values = @wktime.nil? ?  Wktime.new.custom_field_values : @wktime.custom_field_values %>
-			<% unless custom_values.blank? %>
-				<% 
-					# wk time custom fields
-					wkcf_ids = ""
-					custom_values.each do |custom_value|
-						custom_field = custom_value.custom_field
-						if wkcf_ids.blank?
-							wkcf_ids = "wktime_custom_field_values_#{custom_field.id}" 
-						else
-							wkcf_ids += ",wktime_custom_field_values_#{custom_field.id}"
-						end
-				%>
-						<tr><th>
-						<% # = custom_field.name %> 
-						<% # Martin Dube Contribution: show required field in Wktime custom field %>
-						<%= custom_field_label_tag "wktime", custom_value %></th>
-						<td>
-						<% if @editable %>
-							<%= custom_field_tag "wktime", custom_value %>
-						<% else %>
-							<%=h custom_value.value %>
-						<% end %>
-						</td></tr>
+				<% custom_values = @wktime.nil? ?  Wktime.new.custom_field_values : @wktime.custom_field_values %>
+				<% unless custom_values.blank? %>
+					<% 
+						# wk time custom fields
+						wkcf_ids = ""
+						custom_values.each do |custom_value|
+							custom_field = custom_value.custom_field
+							if wkcf_ids.blank?
+								wkcf_ids = "wktime_custom_field_values_#{custom_field.id}" 
+							else
+								wkcf_ids += ",wktime_custom_field_values_#{custom_field.id}"
+							end
+					%>
+							<tr><th>
+							<% # = custom_field.name %> 
+							<% # Martin Dube Contribution: show required field in Wktime custom field %>
+							<%= custom_field_label_tag "wktime", custom_value %></th>
+							<td>
+							<% if @editable %>
+								<%= custom_field_tag "wktime", custom_value %>
+							<% else %>
+								<%=h custom_value.value %>
+							<% end %>
+							</td></tr>
 
-				<% 	end %>
-				<!-- script type="text/javascript"> wkcf_ids = '<%=wkcf_ids%>';</script -->
-			<% end %>
-	<% # Martin Dube Contribution: show previous and next time entry %>
-	<tr>	
-	<td colspan="2">
-		 <%= link_to("\xc2\xab " + l(:label_previous ), {:controller => controller.controller_name, :action => 'edit', :startday => @startday-7, :user_id => @user.id, :project_id => params[:project_id]},
-                  :title => l(:label_wk_prev_week_tip)) %>
-      |
-      <%= link_to(l(:label_next) + " \xc2\xbb", {:controller => controller.controller_name, :action => 'edit', :startday => @startday+7, :user_id => @user.id, :project_id => params[:project_id]},
-                  :title => l(:label_wk_next_week_tip)) %> 
-	</td>
-	</tr>
-</table>
+					<% 	end %>
+					<!-- script type="text/javascript"> wkcf_ids = '<%=wkcf_ids%>';</script -->
+				<% end %>
+		<% # Martin Dube Contribution: show previous and next time entry %>
+		<tr>	
+		<td colspan="2">
+			 <%= link_to("\xc2\xab " + l(:label_previous ), {:controller => controller.controller_name, :action => 'edit', :startday => @startday-7, :user_id => @user.id, :project_id => params[:project_id]},
+	                  :title => l(:label_wk_prev_week_tip)) %>
+	      |
+	      <%= link_to(l(:label_next) + " \xc2\xbb", {:controller => controller.controller_name, :action => 'edit', :startday => @startday+7, :user_id => @user.id, :project_id => params[:project_id]},
+	                  :title => l(:label_wk_next_week_tip)) %> 
+		</td>
+		</tr>
+	</table>
 
-<%= render :partial => 'edit_issues', :locals => { :entries => @prev_template ? @prev_entries : @entries }%>
+	<%= render :partial => 'edit_issues', :locals => { :entries => @prev_template ? @prev_entries : @entries }%>
 
-<%= render :partial => 'edit_footer' %>
+	<%= render :partial => 'edit_footer' %>
 
 <% end %>

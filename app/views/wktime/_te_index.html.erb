@@ -101,7 +101,7 @@ $(document).ready(function()
 <% end %>
 
 <div class="total-hours">
-<p><%= l(:label_total) %>: <%= "#{@unit}" %>&nbsp;<%= controller.total_all(@total_hours) %></p>
+<p><%= l(:label_total) %>: <%= "#{@unit}" %>&nbsp;<% if controller.logInDaysCondition(User.current.id) %><%= controller.total_all_days() %> days<% else %><%= controller.total_all(@total_hours) %> <% end %></p>
 </div>
 
 <% unless @entries.empty? %>

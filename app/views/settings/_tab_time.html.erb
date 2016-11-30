@@ -4,13 +4,15 @@
 		<%= check_box_tag('settings[wktime_restr_max_hour]', 1, @settings['wktime_restr_max_hour'].to_i == 1) %> <label><%= l(:label_wk_restr_max_hour) %></label>
 	</p>
 	<p>
-		<label><%= l(:label_wk_max_hour_day) %></label><%= text_field_tag 'settings[wktime_max_hour_day]', @settings['wktime_max_hour_day'], :size => 3 %>
+		<label><%= l(:label_wk_max_hour_day) %></label>
+		<%= number_field_tag 'settings[wktime_max_hour_day]', @settings['wktime_max_hour_day'], :min => 0, :step => 0.5, :max => 24 %>
 	</p>
 	<p>
 		<%= check_box_tag('settings[wktime_restr_min_hour]', 1, @settings['wktime_restr_min_hour'].to_i == 1) %> <label><%= l(:label_wk_restr_min_hour) %></label>
 	</p>
 	<p>
-		<label><%= l(:label_wk_min_hour_day) %></label><%= text_field_tag 'settings[wktime_min_hour_day]', @settings['wktime_min_hour_day'], :size => 3 %>
+		<label><%= l(:label_wk_min_hour_day) %></label>
+		<%= number_field_tag 'settings[wktime_min_hour_day]', @settings['wktime_min_hour_day'], :min => 0, :step => 0.5, :max => 24 %>
 	</p>
 	<%
 		custom_fields = TimeEntryCustomField.order('name')
@@ -47,6 +49,12 @@
 	<p>
 		<label><%=l(:label_wk_allow_user_filter_tracker)%></label>
 		 <%= check_box_tag('settings[wktime_allow_user_filter_tracker]',1,@settings['wktime_allow_user_filter_tracker'].to_i == 1) %>
+	</p>
+
+	<p>
+		<label><%=l(:label_wk_log_in_days_granularity)%></label>
+		<%- granularity_options = [0.125 ,0.25 ,0.5] %>
+		<%= select_tag('settings[wktime_log_in_days_granularity]', options_for_select(granularity_options, :selected => @settings['wktime_issues_filter_tracker'].blank? ? 0.5 : @settings['wktime_log_in_days_granularity']) , :multiple=> false) %>
 	</p>
 
 </fieldset>

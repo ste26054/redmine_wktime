@@ -6,10 +6,16 @@ fr:
   label_wk_project_dd_width: Largeur de la liste déroulante des projets
   label_wk_issue_dd_width: Largeur de la liste déroulante des demandes
   label_wk_actv_dd_width: Largeur de la liste déroulantes des activités
+
+      #_______Setting/time
   label_wk_restr_max_hour: Restreindre le maximum d'heures par jour
   label_wk_max_hour_day: Maximum d'heures par jour  
   label_wk_restr_min_hour: Obliger un minimum d'heure par jour
   label_wk_min_hour_day: Heures minimum par jour
+  label_wk_log_in_days_granularity: Granularité pour l'imputation en jour
+  label_wk_allow_user_filter_tracker: Permettre à l'utilisateur de filtrer par Tracker
+  label_wk_filter_issue_tracker: Filtrer les demandes par Tracker
+
   label_wk_page_width: Largeur de page
   label_wk_page_height: Hauteur de page
   label_wk_margin_top: Marge supérieure
@@ -59,8 +65,6 @@ fr:
   label_wk_next_week_tip: Semaine suivante
   label_wkexpense: Dépense
   label_te: Temps & Dépense
-  label_wk_allow_user_filter_tracker: Permettre à l'utilisateur de filtrer par Tracker
-  label_wk_filter_issue_tracker: Filtrer les demandes par Tracker
   label_wk_currency: Devise
   label_wk_time: Temps hebdomadaire  
 
@@ -116,4 +120,4 @@ fr:
   error_project_issue_associate: Cannot be deleted because time/expense entries associated
   error_time_entry_delete: "Cannot be deleted. The timesheet with this entry is locked"
   
-
+  label_userpref: Préférence des utilisateurs
