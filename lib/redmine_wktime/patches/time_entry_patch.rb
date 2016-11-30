@@ -11,17 +11,19 @@ module RedmineWktime
 					before_save :check_if_time_entry_is_wklocked
 
 					def check_if_time_entry_is_wklocked
-					
-						wktime_helper = Object.new.extend(WktimeHelper)
-						status = wktime_helper.getTimeEntryStatus(self.spent_on, self.user_id)
-						if !status.blank? && ('a' == status || 's' == status || 'l' == status)
-							errors.add(:base, l(:label_warning_wktime_time_entry))
-								return false
-							
-							# errors.add(:base, "Can not delete because it is attached to a submitted invoice")
-        					
-						end
 						
+						unless @is_force_save
+
+							wktime_helper = Object.new.extend(WktimeHelper)
+							status = wktime_helper.getTimeEntryStatus(self.spent_on, self.user_id)
+							if !status.blank? && ('a' == status || 's' == status || 'l' == status)
+								errors.add(:base, l(:label_warning_wktime_time_entry))
+									return false
+								
+								# errors.add(:base, "Can not delete because it is attached to a submitted invoice")
+	        					
+							end
+						end
 						
 
 					
