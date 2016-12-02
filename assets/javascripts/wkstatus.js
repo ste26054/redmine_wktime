@@ -42,9 +42,9 @@ function showMessage(data,divID){
 			$("form.edit_time_entry p .ui-datepicker-trigger").hide();
 		 }
 		 //edit_issue page
-		 // $("#time_entry_hours").prop("disabled", true);
-		 // $("#time_entry_activity_id").prop("disabled", true);
-		 // $("#time_entry_comments").prop("disabled", true);
+		 $("#time_entry_hours").prop("disabled", true);
+		 $("#time_entry_activity_id").prop("disabled", true);
+		 $("#time_entry_comments").prop("disabled", true);
 		 //new_time_entry page
 		 $("form.new_time_entry p :input").prop("disabled", true);
 		 $("form.new_time_entry p :input").prop("readOnly", true);
@@ -63,9 +63,9 @@ function showMessage(data,divID){
 			$("form.edit_time_entry p .ui-datepicker-trigger").show();
 		 }
 		 //edit_issue page
-		 // $("#time_entry_hours").prop("disabled", false);
-		 // $("#time_entry_activity_id").prop("disabled", false);
-		 // $("#time_entry_comments").prop("disabled", false);
+		 $("#time_entry_hours").prop("disabled", false);
+		 $("#time_entry_activity_id").prop("disabled", false);
+		 $("#time_entry_comments").prop("disabled", false);
 		 //new_time_entry page
 		 $("form.new_time_entry p :input").prop("disabled", false);
 		 $("form.new_time_entry p :input").prop("readOnly", false);
