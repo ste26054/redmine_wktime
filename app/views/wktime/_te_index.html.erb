@@ -1,3 +1,5 @@
+<% user_current = User.current %>
+
 <%= javascript_include_tag 'index', :plugin => "redmine_wktime" %>
 <script type="text/javascript"> 
 	prevTab = 'tab-<%= "#{controller_name}" %>';
@@ -54,23 +56,23 @@ $(document).ready(function()
  </script>
 <tr>
 <th><%= radio_button_tag 'filter_type', '1', projGrp,
- :onclick => 'progrpChanged(this, "#{User.current.id}", true);$("#user_id").removeAttr("disabled");$("#group_id").attr("disabled", true);$("#project_id").removeAttr("disabled");' %>
+ :onclick => 'progrpChanged(this, "#{user_current.id}", true);$("#user_id").removeAttr("disabled");$("#group_id").attr("disabled", true);$("#project_id").removeAttr("disabled");' %>
 <%=l(:field_project)%></th>
 <td class="project" align="left"><%=h select_tag('project_id', 
 	options_for_select(options_for_wktime_project(@manage_view_spenttime_projects),
 	:selected => !projectid.nil? ? projectid.to_i: @selected_project.id),:disabled => @use_group,
-	:onchange => "projChanged(this, #{User.current.id}, true);") %></td>
+	:onchange => "projChanged(this, #{user_current.id}, true);") %></td>
 </tr>
 <% if !@groups.blank? %>
 <tr>
 <th><%= radio_button_tag 'filter_type', '2', !projGrp, 
-:onclick => 'progrpChanged(this, "#{User.current.id}", true);$("#user_id").removeAttr("disabled");$("#group_id").removeAttr("disabled");$("#project_id").attr("disabled", true);' %>
+:onclick => 'progrpChanged(this, "#{user_current.id}", true);$("#user_id").removeAttr("disabled");$("#group_id").removeAttr("disabled");$("#project_id").attr("disabled", true);' %>
 <%=l(:label_group_plural)%></th>
 <td>
 	<%=h select_tag('group_id',
 	options_for_select( @groups.collect {|p| [p.name, p.id ]},
 	:selected => (groupid.nil? ? 0 : groupid)),:disabled => !@use_group,
-	:onchange => "grpChanged(this, #{User.current.id}, true);") %>
+	:onchange => "grpChanged(this, #{user_current.id}, true);") %>
 </td>
 </tr>
 <% end %>
@@ -80,7 +82,7 @@ $(document).ready(function()
 <%# show the blank value if more than one user is in the list %>
 <%=h select_tag('user_id',
 	options_for_select( [["All Users","0"]] + (@members.blank? ? [] : @members),
-		:selected => userid.nil? ? (@user.nil? ? User.current.id : @user.id) : userid),
+		:selected => userid.nil? ? (@user.nil? ? user_current.id : @user.id) : userid),
 	:onchange => 'this.form.submit();') %></td>
 </tr>
 
@@ -101,7 +103,7 @@ $(document).ready(function()
 <% end %>
 
 <div class="total-hours">
-<p><%= l(:label_total) %>: <%= "#{@unit}" %>&nbsp;<% if controller.logInDaysCondition(User.current.id) %><%= controller.total_all_days() %> days<% else %><%= controller.total_all(@total_hours) %> <% end %></p>
+<p><%= l(:label_total) %>: <%= "#{@unit}" %>&nbsp;<% if controller.logInDaysCondition(user_current) %><%= controller.total_all_days() %> days<% else %><%= controller.total_all(@total_hours) %> <% end %></p>
 </div>
 
 <% unless @entries.empty? %>
@@ -113,5 +115,5 @@ $(document).ready(function()
 <% html_title l(:label_spent_time), l(:label_details) %>
 
 <% content_for :header_tags do %>
-    <%= auto_discovery_link_tag(:atom, {:issue_id => @issue, :format => 'atom', :key => User.current.rss_key}, :title => l(:label_spent_time)) %>
+    <%= auto_discovery_link_tag(:atom, {:issue_id => @issue, :format => 'atom', :key => user_current.rss_key}, :title => l(:label_spent_time)) %>
 <% end %>

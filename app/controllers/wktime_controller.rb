@@ -16,6 +16,7 @@ helper :custom_fields
 
  
   def index
+  	
 	set_filter_session
     retrieve_date_range	
 	@from = getStartDay(@from)
@@ -111,8 +112,8 @@ helper :custom_fields
 
   end
 
-def logInDaysCondition(user_id)
-	user_here = User.find(user_id)
+def logInDaysCondition(user_here)
+	#user_here = user#User.find(user_id)
 	if user_here.pref[:logTimeInDays].present?
 		if  user_here.pref[:logTimeInDays] == "1" && params[:controller] == "wktime"
 			if user_here.pref[:exceedLogTimeLimit].present?
@@ -582,18 +583,21 @@ end
 	end
 	
 	def getusers
+
 		project = Project.find(params[:project_id])
 		userStr = ""
 		userList = call_hook(:controller_project_member, {:project_id => params[:project_id], :page => params[:page]})
 		if !userList.blank?
 			projmembers = userList[0].blank? ? nil : userList[0]
 		else
-			projmembers = project.members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC")
+			projmembers = project.users.order("firstname ASC, lastname ASC")#members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC")
+			#projmembers = project.members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC")
 		end
 		if !projmembers.nil?
-			projmembers = projmembers.to_a.uniq 
+			#projmembers = projmembers.to_a.uniq 
 			projmembers.each do |m|
-				userStr << m.user_id.to_s() + ',' + m.name + "\n"
+				userStr << m.id.to_s() + ',' + m.name + "\n"
+				#userStr << m.user_id.to_s() + ',' + m.name + "\n"
 			end
 		end
 		respond_to do |format|
@@ -873,23 +877,13 @@ private
 		noOfWeek = Setting.plugin_redmine_wktime['wktime_previous_template_week']
 		
 		if !noOfWeek.blank?
-			entityNames = getEntityNames		
-			sDay= getDateSqlString('t.spent_on')
-			sqlStr = "select t.* from " + entityNames[1] + " t inner join ( "
-			if ActiveRecord::Base.connection.adapter_name == 'SQLServer'	
-				sqlStr += "select TOP " + noOfWeek.to_s + sDay + " as startday" +
-					" from  " + entityNames[1] + " t where user_id = " + user_id.to_s +
-					" group by " + sDay + " order by startday desc ) as v" 
-			else
-				sqlStr += "select " + sDay + " as startday" +
-						" from  " + entityNames[1] + " t where user_id = " + user_id.to_s +
-						" group by startday order by startday desc limit " + noOfWeek.to_s + ") as v" 
-			end
-					
-			sqlStr +=" on " + sDay + " = v.startday where user_id = " + user_id.to_s +
-					" order by t.project_id, t.issue_id, t.activity_id"				
-								
-			prev_entries = TimeEntry.find_by_sql(sqlStr)
+			entityNames = getEntityNames	
+			
+			last_end_week = @startday - 1
+			last_start_week = last_end_week.beginning_of_week
+			prev_entries = TimeEntry.where(user_id: user_id)
+			prev_entries = TimeEntry.where(user_id: user_id).where("spent_on >= :start_date AND spent_on <= :end_date", {start_date: last_start_week, end_date: last_end_week})
+
 		end
 		prev_entries
 	end
@@ -1289,7 +1283,8 @@ private
   end  
 
 	# set project/group members
-	def setMembers		
+	def setMembers	
+
 		@groups = Group.sorted.all
 		@members = Array.new
 		projMem = nil
@@ -1307,10 +1302,11 @@ private
 				projMem = hookProjMem[0].blank? ? [] : hookProjMem[0]
 
 			else
-				projMem = @selected_project.blank? ? [] : @selected_project.members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC").distinct("#{User.table_name}.id")
+				projMem = @selected_project.blank? ? [] : @selected_project.users.order("firstname ASC, lastname ASC")#@selected_project.members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC").distinct("#{User.table_name}.id")
 
-			end				
-			@members = projMem.collect{|m| [ m.name, m.user_id ] } if !projMem.blank?
+			end
+			@members = projMem.collect{|m| [ m.name, m.id ] } if !projMem.blank?				
+			#@members = projMem.collect{|m| [ m.name, m.user_id ] } if !projMem.blank?
 		elsif filter_type == '2'
 			userList = []
 			userList = getGrpMembers			
@@ -1318,8 +1314,10 @@ private
 				@members << [users.name,users.id.to_s()]
 			end		
 		else		
-			projMem = @selected_project.members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC") if !@selected_project.blank?		
-			@members = projMem.collect{|m| [ m.name, m.user_id ] } if !projMem.blank?
+			#projMem = @selected_project.members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC") if !@selected_project.blank?
+			projMem = @selected_project.users.order("firstname ASC, lastname ASC") if !@selected_project.blank?		
+			@members = projMem.collect{|m| [ m.name, m.id ] } if !projMem.blank?
+			#@members = projMem.collect{|m| [ m.name, m.user_id ] } if !projMem.blank?
 			if !hookMem.blank?
 				@members = hookMem[0].blank? ? @members : hookMem[0]		
 			end

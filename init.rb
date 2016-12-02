@@ -282,17 +282,17 @@ class WktimeHook < Redmine::Hook::ViewListener
 		end
 	end
 	
-	def controller_issues_edit_before_save(context={})	
-		if !context[:time_entry].blank?
-			if !context[:time_entry].hours.blank? && !context[:time_entry].activity_id.blank?
-				wktime_helper = Object.new.extend(WktimeHelper)				
-				status= wktime_helper.getTimeEntryStatus(context[:time_entry].spent_on,context[:time_entry].user_id)		
-				if !status.blank? && ('a' == status || 's' == status || 'l' == status)				
-					 raise "#{l(:label_warning_wktime_time_entry)}"					
-				end			
-			end	
-		end
-	end	
+	# def controller_issues_edit_before_save(context={})	
+	# 	if !context[:time_entry].blank?
+	# 		if !context[:time_entry].hours.blank? && !context[:time_entry].activity_id.blank?
+	# 			wktime_helper = Object.new.extend(WktimeHelper)				
+	# 			status= wktime_helper.getTimeEntryStatus(context[:time_entry].spent_on,context[:time_entry].user_id)		
+	# 			if !status.blank? && ('a' == status || 's' == status || 'l' == status)				
+	# 				 raise "#{l(:label_warning_wktime_time_entry)}"					
+	# 			end			
+	# 		end	
+	# 	end
+	# end	
 end
 
 

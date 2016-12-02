@@ -109,24 +109,24 @@ user = nil
 	<% thours.each_with_index do |th,i| %>		
 		<td align="center">
 			<%= currencySym %>&nbsp;<span id=<%= "day_total_#{i+1}" %>
-				<% if !controller.logInDaysCondition(@user.id) %> 
+				<% if !controller.logInDaysCondition(@user) %> 
 				style="display: initial; "<% else %> style="display: none;"
 				<% end %> ><%= ("%.2f" % th) %></span>
 			<span id=<%= "day_total_#{i+1}_byDay"%> 
-				<% if !controller.logInDaysCondition(@user.id) %> 
+				<% if !controller.logInDaysCondition(@user) %> 
 				style="display: none;"<% else %> style="display: initial; "
 				<% end %>
 				> <%= ("%.2f" % ((th*5)/@user.actual_weekly_working_hours)) %>  </span> <% if params[:controller] == "wktime" %>
-			<% if controller.logInDaysCondition(@user.id) %> day<% else %> hours<% end %><% end %>
+			<% if controller.logInDaysCondition(@user) %> day<% else %> hours<% end %><% end %>
 		</td>
 	<% end %>
 	<td>	
-	<b>	<%= l(:label_total) %>: <%= currencySym %>&nbsp;<span id="total_hours" <% if controller.logInDaysCondition(@user.id) %> 
+	<b>	<%= l(:label_total) %>: <%= currencySym %>&nbsp;<span id="total_hours" <% if controller.logInDaysCondition(@user) %> 
 				style="display: none;"<% else %> style="display: initial; "
-				<% end %>> <%= ("%.2f" % @total_hours) %> </span><span id="total_days" <% if controller.logInDaysCondition(@user.id) %> 
+				<% end %>> <%= ("%.2f" % @total_hours) %> </span><span id="total_days" <% if controller.logInDaysCondition(@user) %> 
 				style="display: initial;"<% else %> style="display: none; "
 				<% end %>><%= ("%.2f" % ((@total_hours*5)/@user.actual_weekly_working_hours)) %>
-	</span><% if params[:controller] == "wktime" %><% if controller.logInDaysCondition(@user.id) %> days<% else %> hours<% end %><% end %> </b>
+	</span><% if params[:controller] == "wktime" %><% if controller.logInDaysCondition(@user) %> days<% else %> hours<% end %><% end %> </b>
 	<%=h hidden_field_tag('total', ("%.2f" % @total_hours) ) %>
 	<%=h hidden_field_tag('unit', currencySym) %>
 	</td>

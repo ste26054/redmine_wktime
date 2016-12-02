@@ -1,3 +1,5 @@
+<% user_current = User.current%>
+
 <%= error_messages_for 'time_entry' %>
 <%= back_url_hidden_field_tag %>
 <script type="text/javascript"> 
@@ -12,7 +14,7 @@
 <td class="project" align="left"><%=h select_tag('project_id', 
 	options_for_select(options_for_wktime_project(@manage_projects),
 	:selected => @selected_project.id),
-	:onchange => "projChanged(this, #{User.current.id}, false);") %></td>
+	:onchange => "projChanged(this, #{user_current.id}, false);") %></td>
 </tr>
 <tr>
 <th><%=l(:label_member)%></th>
@@ -22,12 +24,15 @@
 <%=	ddMember %>
 <% else %>
 <% 
-	projmem = @selected_project.members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC")
-	projmem = projmem.to_a.uniq if !projmem.nil?
+	projmem = @selected_project.users.order("firstname ASC, lastname ASC")#members.order("#{User.table_name}.firstname ASC,#{User.table_name}.lastname ASC")
+	#projmem = projmem.to_a.uniq if !projmem.nil?
 %>
-<%=h select_tag('user_id',
+<%#=h select_tag('user_id',
 	options_for_select( projmem.collect{|m| [ m.name, m.user_id ] },
-		:selected =>  @user.nil? ? User.current.id : @user.id)) %>
+		:selected =>  @user.nil? ? user_current.id : @user.id)) %>
+<%=h select_tag('user_id',
+	options_for_select( projmem.collect{|m| [ m.name, m.id ] },
+		:selected =>  @user.nil? ? user_current.id : @user.id)) %>
 		
 <% end %>		
 </td>
@@ -36,8 +41,8 @@
 <tr>
 <th width="100px" ><%=l(:field_user)%></th>
 <td>
-<%=h User.current.name %>
-<%=h hidden_field_tag('user_id', User.current.id) %>
+<%=h user_current.name %>
+<%=h hidden_field_tag('user_id', user_current.id) %>
 </td>
 </tr>
 <% end %>

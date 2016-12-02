@@ -34,20 +34,44 @@ function showEntryWarning(entrydate){
 function showMessage(data,divID){							
 	if(data!=null && ('s'== data || 'a'== data || 'l'== data)){
 		divID.style.display = 'block';
+		//edit_time_entry page
 		 $("form.edit_time_entry p :input").prop("disabled", true);
 		 $("form.edit_time_entry p :input").prop("readOnly", true);
 		 $("form.edit_time_entry :input[type=submit]").hide();
 		 if ($("form.edit_time_entry p .ui-datepicker-trigger").length > 0){
 			$("form.edit_time_entry p .ui-datepicker-trigger").hide();
 		 }
+		 //edit_issue page
+		 // $("#time_entry_hours").prop("disabled", true);
+		 // $("#time_entry_activity_id").prop("disabled", true);
+		 // $("#time_entry_comments").prop("disabled", true);
+		 //new_time_entry page
+		 $("form.new_time_entry p :input").prop("disabled", true);
+		 $("form.new_time_entry p :input").prop("readOnly", true);
+		 $("form.new_time_entry :input[type=submit]").hide();
+		 if ($("form.new_time_entry p .ui-datepicker-trigger").length > 0){
+			$("form.new_time_entry p .ui-datepicker-trigger").hide();
+		 }
 	}
 	else{				
 		divID.style.display ='none';
+		//edit_time_entry page
 		$("form.edit_time_entry p :input").prop("disabled", false);
 		 $("form.edit_time_entry p :input").prop("readOnly", false);
 		 $("form.edit_time_entry :input[type=submit]").show();
 		 if ($("form.edit_time_entry p .ui-datepicker-trigger").length > 0){
 			$("form.edit_time_entry p .ui-datepicker-trigger").show();
+		 }
+		 //edit_issue page
+		 // $("#time_entry_hours").prop("disabled", false);
+		 // $("#time_entry_activity_id").prop("disabled", false);
+		 // $("#time_entry_comments").prop("disabled", false);
+		 //new_time_entry page
+		 $("form.new_time_entry p :input").prop("disabled", false);
+		 $("form.new_time_entry p :input").prop("readOnly", false);
+		 $("form.new_time_entry :input[type=submit]").show();
+		 if ($("form.new_time_entry p .ui-datepicker-trigger").length > 0){
+			$("form.new_time_entry p .ui-datepicker-trigger").show();
 		 }
 	}	
 }

@@ -1,3 +1,4 @@
+<% user_current = User.current%>
 <%= form_tag({}) do -%>	
 <%= hidden_field_tag 'back_url', url_for(params) %>
 <table class="list time-entries">
@@ -5,21 +6,24 @@
 <tr>
 <th><%= l(:field_start_date) %></th>
 <th><%= l(:field_user) %></th>
-<th><% if controller.logInDaysCondition(User.current.id) %> Days <% else %> <%= controller.getLabelforSpField %><% end %></th>
+<th><% if controller.logInDaysCondition(user_current) %> Days <% else %> <%= controller.getLabelforSpField %><% end %></th>
 <th><%= l(:field_status) %></th>
 <th><%= l(:field_status_modified_by) %></th>
 <th></th>
 </tr>
 </thead>
 <tbody>
-<% @entries.each do |entry| -%>
 
+<% user_ids = @entries.map(&:user_id).uniq.compact %>
+<% user_h = User.where(id: user_ids).group_by(&:id)%>
+<% @entries.each do |entry| -%>
+<% entry_user = user_h[entry.user_id].first %>
 <tr class="time-entry <%= cycle("odd", "even") %>">
 <td class="start_date"><%=h format_date(entry.spent_on) %></td>
 
-<td class="user"><%=h entry.user.name %></td>
+<td class="user"><%=h entry_user.name %></td>
 
-<td  class="user"><% if controller.logInDaysCondition(User.current.id) %><%- result=(5*entry.hours)/entry.user.actual_weekly_working_hours %><%= ("%.2f" % result) %> <% else %> <%= controller.getUnit(entry) %>&nbsp;<%=h html_hours("%.2f" % entry.hours) %> <% end %></td>
+<td  class="user"><% if controller.logInDaysCondition(user_current) %><%- result=(5*entry.hours)/entry_user.actual_weekly_working_hours %><%= ("%.2f" % result) %> <% else %> <%= controller.getUnit(entry) %>&nbsp;<%=h html_hours("%.2f" % entry.hours) %> <% end %></td>
 
 <td class="status"><%=h statusString(entry.status) unless entry.status.blank? %></td>
 <td class="status_updater"><%=h entry.status_updater %></td>

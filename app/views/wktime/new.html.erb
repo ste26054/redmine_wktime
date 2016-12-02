@@ -1,3 +1,7 @@
+<script type="text/javascript">
+   wkuserprefIndexUrl = '<%=url_for(:controller => "wkuserpref", :action => "index", :tab => "wkuserpref")%>'; 
+</script>
+
 <%= javascript_include_tag 'index', :plugin => "redmine_wktime" %>
 
 <%= form_tag({:controller => 'wktime', :action => 'edit'}, :method => :post, :id => 'wktime_new') do %>
