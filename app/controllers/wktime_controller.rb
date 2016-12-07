@@ -1205,6 +1205,7 @@ private
 	end
 	
   def check_perm_and_redirect
+  
     unless check_permission
       render_403
       return false
@@ -1465,6 +1466,7 @@ private
 	end
   
 	def set_user_projects
+
 		set_loggable_projects
 		set_managed_projects				
 		set_approvable_projects
@@ -1519,6 +1521,7 @@ private
 	
 	
 	def set_project_issues(entries)
+		
 		@projectIssues ||= Hash.new
 		@projActivities ||= Hash.new
 		@projectIssues.clear
@@ -1574,11 +1577,13 @@ private
                		cond =["((#{IssueStatus.table_name}.is_closed = ? ) #{issueAssignToUsrCond} #{trackerids}) and #{Issue.table_name}.project_id in ( #{project_id})",false]
       
                 end
-                #allIssues = Issue.find_all_by_project_id(project_id, :conditions => cond, :include => :status)				
+                #allIssues = Issue.find_all_by_project_id(project_id, :conditions => cond, :include => :status)
+              
+
 				allIssues = Issue.includes(:status).references(:status).where(cond)
             end
             # find the issues which are visible to the user
-			@projectIssues[project_id] = allIssues.select {|i| i.visible?(@user) }
+			@projectIssues[project_id] = allIssues.visible(@user)#.select {|i| i.visible?(@user) }
         end
         if @projActivities[project_id].blank?
             @projActivities[project_id] = project.activities unless project.nil?
