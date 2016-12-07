@@ -17,10 +17,11 @@ module WktimeHelper
 	def options_wk_status_select(value)
 		options_for_select([[l(:wk_status_empty), 'e'],
 							[l(:wk_status_new), 'n'],
-							[l(:wk_status_rejected), 'r'],
 							[l(:wk_status_submitted), 's'],
-							[l(:wk_status_approved), 'a']],
-							value.blank? ? ['e','n','r','s','a'] : value)
+							[l(:wk_status_approved), 'a'],
+							[l(:wk_status_rejected), 'r'],
+							[l(:wk_status_locked), 'l']],
+							value.blank? ? ['e','n','s','a','r','l'] : value)
 	end
 	
 	def statusString(status)	
@@ -34,6 +35,8 @@ module WktimeHelper
 			statusStr = l(:wk_status_submitted)
 		when 'e'
 			statusStr = l(:wk_status_empty)
+		when 'l'
+			statusStr = l(:wk_status_locked)
 		else
 			statusStr = l(:wk_status_new)
 		end
@@ -556,6 +559,7 @@ end
 	
 	def getTimeEntryStatus(spent_on,user_id)
 		#result = Wktime.find(:all, :conditions => [ 'begin_date = ? AND user_id = ?', getStartDay(spent_on), user_id])	
+		
 		start_day = getStartDay(spent_on)		
 		locked = call_hook(:controller_check_locked,{ :startdate => start_day})
 		locked  = locked.blank? ? '' : (locked.is_a?(Array) ? (locked[0].blank? ? '': locked[0].to_s) : locked.to_s) 

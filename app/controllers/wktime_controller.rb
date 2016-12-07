@@ -3,11 +3,11 @@ unloadable
 
 include WktimeHelper
 
-before_filter :require_login
-before_filter :check_perm_and_redirect, :only => [:edit, :update]
-before_filter :check_editperm_redirect, :only => [:destroy]
-before_filter :check_view_redirect, :only => [:index]
-before_filter :check_log_time_redirect, :only => [:new]
+before_action :require_login
+before_action :check_perm_and_redirect, :only => [:edit, :update]
+before_action :check_editperm_redirect, :only => [:destroy]
+before_action :check_view_redirect, :only => [:index]
+before_action :check_log_time_redirect, :only => [:new]
 
 accept_api_auth :index, :edit, :update, :destroy, :deleteEntries
 
@@ -149,16 +149,24 @@ end
 
 	@prev_template = false
 	@new_custom_field_values = getNewCustomField
-	setup
+	#setup# done in before_action
 	findWkTE(@startday)
 	@editable = @wktime.nil? || @wktime.status == 'n' || @wktime.status == 'r'
+	
 	hookPerm = call_hook(:controller_check_editable, {:editable => @editable, :user => @user})
 	@editable = hookPerm.blank? ? @editable : hookPerm[0]
+	
+	#check if locked?
 	hookPerm = call_hook(:controller_check_locked, {:startdate => @startday})
 	@locked = hookPerm.blank? ? false : hookPerm[0]
 	@editable = false if @locked
+	
 	set_edit_time_logs
 	@entries = findEntries()
+
+	# set_loggable_projects #already done in check_perm_and_redirect
+
+
 	set_project_issues(@entries)
 	if @entries.blank? && !params[:prev_template].blank?
 		@prev_entries = prevTemplate(@user.id)
@@ -177,14 +185,49 @@ end
 
   # called when save is clicked on the page
   def update
-	setup	
-	set_loggable_projects
+  	
+	#BEFORE_ACTION check_perm_and_redirect -> check_permission
+
+	#setup
+		# @startday (first day of the week) 
+		# @user (timesheet_user)
+
+	#set_user_projects
+	#_set_loggable_projects
+		#@logtime_projects
+		# @user (timesheet_user)
+	#_set_managed_projects
+	#**@manage_projects
+		# from version 1.7, the project member with 'edit time logs' permission is considered as managers
+	#**@manage_view_spenttime_projects
+		# @manage_view_spenttime_projects contains project list of current user with edit_time_entries and view_time_entries permission
+		# @manage_view_spenttime_projects is used to fill up the dropdown in list page for managers
+	#**@currentUser_loggable_projects
+		# @currentUser_loggable_projects contains project list of current user with log_time permission
+		# @currentUser_loggable_projects is used to show/hide new time & expense sheet link	
+	#_set_approvable_projects
+		# @approvable_projects
+
+	
 	set_edit_time_logs
+		# @edittimelogs from controller hook
+
 	@wktime = nil
 	errorMsg = nil
 	respMsg = nil	
 	findWkTE(@startday)	
-	@wktime = getWkEntity if @wktime.nil?
+		# setup
+		# @wktime
+	@wktime = getWkEntity if @wktime.nil? # instance a new Wktime if still nil
+
+	#Sz: copied from edit action
+	@editable = @wktime.nil? || @wktime.status == 'n' || @wktime.status == 'r'
+	hookPerm = call_hook(:controller_check_editable, {:editable => @editable, :user => @user})
+	@editable = hookPerm.blank? ? @editable : hookPerm[0]
+	hookPerm = call_hook(:controller_check_locked, {:startdate => @startday})
+	@locked = hookPerm.blank? ? false : hookPerm[0]
+	@editable = false if @locked
+
 	allowApprove = false
 	if api_request?
 		errorMsg = gatherAPIEntries	
@@ -194,6 +237,9 @@ end
 	else
 		total = params[:total].to_f
 		gatherEntries
+			# @entries
+			# @wkvalidEntry
+			# @teEntrydisabled
 		allowApprove = true		
 	end	
 	errorMsg = gatherWkCustomFields(@wktime) if @wkvalidEntry && errorMsg.blank?
@@ -201,11 +247,11 @@ end
 	cvParams = wktimeParams[:custom_field_values] unless wktimeParams.blank?	
 	useApprovalSystem = (!Setting.plugin_redmine_wktime['wktime_use_approval_system'].blank? &&
 							Setting.plugin_redmine_wktime['wktime_use_approval_system'].to_i == 1)
-						
+					
 	@wktime.transaction do
 		begin	
 
-
+			
 			if errorMsg.blank? && (!params[:wktime_save].blank? || !params[:wktime_save_continue].blank? ||
 				(!params[:wktime_submit].blank? && @wkvalidEntry && useApprovalSystem))	
 
@@ -216,18 +262,24 @@ end
 					entrynilcount=0
 
 					@entries.each do |entry|	
+						entry.issue.reload
 						entrycount += 1
 						entrynilcount += 1 if (entry.hours).blank?
 						allowSave = true
 						if (!entry.id.blank? && !entry.editable_by?(User.current))
 							allowSave = false
 						end
-						if to_boolean(@edittimelogs)
-							allowSave = true
+						if !entry.id.nil? && @edittimelogs[entry.id] == false
+							allowSave = false
 						end
+						# if to_boolean(@edittimelogs)
+						# 	allowSave = true
+						# end
+
 						if !((Setting.plugin_redmine_wktime['wktime_allow_blank_issue'].blank? ||
 								Setting.plugin_redmine_wktime['wktime_allow_blank_issue'].to_i == 0) && 
 								entry.issue.blank?)
+						
 							if allowSave
 								errorMsg = updateEntry(entry) 
 							else
@@ -251,6 +303,7 @@ end
 				end
 				setTotal(@wktime,total)
 				#if (errorMsg.blank? && total > 0.0)
+				
 				errorMsg = 	updateWktime if (errorMsg.blank? && ((!@entries.blank? && entrycount!=entrynilcount) || @teEntrydisabled))	
 
 			end
@@ -317,6 +370,7 @@ end
 				      redirect_to :action => 'index' , :tab => params[:tab]                   
 				end 
 			else
+				respMsg << " - #{errorMsg} " unless errorMsg.nil?
 				flash[:error] = respMsg
 				if !params[:enter_issue_id].blank? && params[:enter_issue_id].to_i == 1					
 				redirect_to :action => 'edit', :user_id => params[:user_id], :startday => @startday,
@@ -352,30 +406,46 @@ end
 
   end
 	
-	def deleterow	
+	def deleterow
+	
 		if check_editPermission		
 			if api_request?
 				ids = gatherIDs				
 			else
 				ids = params['ids']
 			end
-			delete(ids)
+			destroyed = TimeEntry.transaction do
+		    @entries.each do |t|
+		        unless t.destroy && t.destroyed?
+		          raise ActiveRecord::Rollback
+		        end
+		      end
+		    end
+			#record = TimeEntry.destroy(ids)
+			
+			#delete(ids)
 			respond_to do |format|
+
 				format.text  { 
-					render :text => 'OK' 
+					if destroyed
+						render :text => 'OK' 
+					else
+						render :text => 'FAILED'
+					end
 				}
-				format.api {
-					render_api_ok
+				format.api { 
+					if destroyed 
+						render_api_ok 
+					else
+						render_403
+					end
 				}
 			end
+			
 		else	
 			respond_to do |format|
-				format.text  { 
-					render :text => 'FAILED' 
-				}
-				format.api {
-					render_403
-				}
+				format.text  { render :text => 'FAILED' }
+				format.api { render_403	}
 			end
 		end
 	end
@@ -795,10 +865,11 @@ private
 
 
 	def check_permission
+		
 		ret = false
 		setup
 		set_user_projects
-		status = getTimeEntryStatus(@startday, @user_id)
+		status = getTimeEntryStatus(@startday, @user.id)
 		approve_projects = @approvable_projects & @logtime_projects
 		if (status != 'n' && (!approve_projects.blank? && approve_projects.size > 0))
 			#for approver			
@@ -891,7 +962,8 @@ private
 	
 	def gatherEntries
  		entryHash = params[:time_entry]
-
+ 		wktime_user_id = params[:user_id]
+ 		current_user = User.current
 		@entries ||= Array.new
 		custom_values = Hash.new
 		#setup
@@ -901,13 +973,30 @@ private
 		custom_fields = TimeEntryCustomField.all
 		@wkvalidEntry=false
 		@teEntrydisabled=false
+		
+		project_ids_editable_timelog = []
+		project_ids_editable_timelog += @logtime_projects.map(&:id)
+		project_ids_editable_timelog += @manage_projects.map(&:id)
+		project_ids_editable_timelog = project_ids_editable_timelog.uniq.compact
 		unless entryHash.nil?
 			entryHash.each_with_index do |entry, i|
-				if !entry['project_id'].blank?
+				
+				if entry['project_id'].blank? && !entry['issue_id'].blank?
+					temp_issue = Issue.find_by(id: entry['issue_id'])
+					entry_project_id = temp_issue.project_id unless temp_issue.nil?
+					temp_issue = nil
+				else
+					entry_project_id = entry['project_id']
+				end
 
+				if !entry_project_id.blank? && entry_project_id.to_i.in?(project_ids_editable_timelog)
+
+					break unless wktime_user_id
+					
 					hours = params['hours' + (i+1).to_s()]					
 					ids = params['ids' + (i+1).to_s()]
-					comments = params['comments' + (i+1).to_s()]
+					comments = entry['comments']
+					#comments = params['comments' + (i+1).to_s()]
 					disabled = params['disabled' + (i+1).to_s()]
 					@wkvalidEntry=true	
 					if use_detail_popup
@@ -919,20 +1008,47 @@ private
 					
 					j = 0
 					ids.each_with_index do |id, k|
-						if disabled[k] == "false"
+						#check for each entry that exist or not if it can be modified
+						#if disabled[k] == "false"
+						teEntry = nil
+						teEntry = getTEEntry(id) 
+						entry_editable = false
+						unless id.blank? 
+
+							if @edittimelogs[id.to_i] != false && @editable
+								if !teEntry.issue.nil? && teEntry.issue.status.is_closed 
+									entry_editable = false 
+								else
+									entry_editable = teEntry.editable_by?(current_user)
+								end 
+							end
+						else
+							#new timeEntry
+							if !entry[:issue_id].blank? && !hours.nil?
+								temp_issue = Issue.find_by(id: entry[:issue_id].to_i)
+								if !temp_issue.nil? && !temp_issue.status.is_closed
+									entry_editable = true
+								end
+								temp_issue = nil
+							end
+						end
+						
+						if entry_editable
 							if(!id.blank? || !hours[j].blank?)
-								teEntry = nil
-								teEntry = getTEEntry(id)									
+								
+								# teEntry = getTEEntry(id)									
 								teEntry.attributes = entry
 								# since project_id and user_id is protected
-								teEntry.project_id = entry['project_id']
+								teEntry.project_id = entry_project_id
 								teEntry.user_id = @user.id
+								
 								teEntry.spent_on = @startday + k
+
 								#for one comment, it will be automatically loaded into the object
 								# for different comments, load it separately
-								unless comments.blank?
-									teEntry.comments = comments[k].blank? ? nil : comments[k]	
-								end
+								# unless comments.blank?
+								# 	teEntry.comments = comments[k].blank? ? nil : comments[k]	
+								# end
 								#timeEntry.hours = hours[j].blank? ? nil : hours[j].to_f
 								#to allow for internationalization on decimal separator
 								#setValueForSpField(teEntry,hours[j],decimal_separator,entry)
@@ -1120,8 +1236,10 @@ private
   
     def check_editperm_redirect
 		hookPerm = call_hook(:controller_edit_timelog_permission, {:params => params})
+		
 		if !hookPerm.blank?
-			allow = hookPerm[0] || (check_editPermission && @user.id == User.current.id)
+			#allow = hookPerm[0] || (check_editPermission && @user.id == User.current.id)
+			allow = !(false.in?(hookPerm[0].values)) || (check_editPermission && @user.id == User.current.id)
 		else
 			allow = check_editPermission
 		end
@@ -1132,6 +1250,7 @@ private
 	end
   
     def check_editPermission
+    	
 		allowed = true;
 		if api_request?
 			ids = gatherIDs			
@@ -1155,6 +1274,7 @@ private
 	end
 	
 	def updateEntry(entry)
+		
 		errorMsg = nil		
 		if entry.hours.blank?
 			# delete the time_entry
@@ -1168,11 +1288,13 @@ private
 		else
 			#if id is there it should be update otherwise create
 			#the UI disables editing of
-			if can_log_time?(entry.project_id) || to_boolean(@edittimelogs)
-				if !entry.save()
+			if can_log_time?(entry.project_id) || (!entry.id.nil? && !(@edittimelogs[entry.id] == false))#to_boolean(@edittimelogs)
+				if !entry.save
+					
 					errorMsg = entry.errors.full_messages.join('\n')
 				end
 			else
+
 				errorMsg = l(:error_not_permitted_save)
 			end
 		end
@@ -1611,9 +1733,11 @@ private
 	   Wktime.delete_all(cond)
 	end	
 	
-	def delete(ids)
-		TimeEntry.delete(ids)
-	end
+	# def delete(ids)
+	# 	#TimeEntry.delete(ids)
+	
+	# 	TimeEntry.destroy(ids)
+	# end
 	
 	def findTEEntries(ids)
 		TimeEntry.find(ids)
@@ -1738,8 +1862,11 @@ private
 	end
 	
 	def set_edit_time_logs
+	
 		editPermission = call_hook(:controller_edit_timelog_permission, {:params => params})
-		@edittimelogs  = editPermission.blank? ? '' : editPermission[0].to_s
+		#@edittimelogs  = editPermission.blank? ? '' : editPermission[0].to_s
+		@edittimelogs  = editPermission.blank? ? {} : editPermission[0]#[0].to_s
+		
 	end
 	
 	def is_member_of_any_project

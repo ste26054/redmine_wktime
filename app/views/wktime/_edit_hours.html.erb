@@ -3,27 +3,39 @@
 		<% # close the previously opened tr %>
 		<% while @wday_index < padTill %>
 			<% 
-			disable = !@editable			
-			if @editable
+			if !entry.nil? && (@edittimelogs[entry.id] == false)
+				edit_entry_from_hook = false
+				disable = true
+			else
+				edit_entry_from_hook = true
+				disable = !@editable 
+			end
+			#disable = !@editable && !edit_entry_from_hook
+
+			if @editable && edit_entry_from_hook
 				#hookCellEditPerm = call_hook(:view_cell_edit, :entry => entry)
-				if @edittimelogs.blank?
-					disable = !@prev_template && !entry.nil? && !entry.editable_by?(User.current)										
-				else
-					if (@edittimelogs == 'true')
-						disable = !@prev_template && !entry.nil? && !(to_boolean(@edittimelogs))
-					elsif (@edittimelogs == 'false')
-						if (!@manage_projects.blank? && @manage_projects.size > 0 && User.current.id != @user.id)
-							disable = !@prev_template && !entry.nil? && !(to_boolean(@edittimelogs))
-						else
-							disable = !@prev_template && !entry.nil? && !entry.editable_by?(User.current)
-						end
+				# if @edittimelogs.blank?
+				# 	disable = !@prev_template && !entry.nil? && !entry.editable_by?(User.current)										
+				# else
+					# if (@edittimelogs[entry.id] == 'true')
+						
+					
+					if (!@manage_projects.blank? && @manage_projects.size > 0 && User.current.id != @user.id)
+						
+						disable = !@prev_template && !entry.nil? && !entry.editable_by?(User.current) && !entry.project_id.in?(@manage_projects.map(&:id)) # && !edit_entry_from_hook#!(to_boolean(@edittimelogs))
+					else
+						disable = !@prev_template && !entry.nil? && !entry.editable_by?(User.current) #&& !edit_entry_from_hook
 					end
-				end
+					#else
+						#disable = !@prev_template && !entry.nil? #&& (@edittimelogs[entry.id] == false)#(to_boolean(@edittimelogs))
+					#end
+				# end
 			end
 			%>
+
 			<%#if this is from a previous template, don't print the hours%>
 			<td class="hours">
-
+				<%#=  "#{entry.id}___ #{@edittimelogs[entry.id].to_s}" unless entry.nil?%>
 				<%=h text_field_tag('hours' + @row.to_s() +'[]', entry.nil? || @prev_template ? '' : ("%.2f" % entry.hours) ,:size => 7,
 					:style => if controller.logInDaysCondition(@user) 
 					"display: none;" 

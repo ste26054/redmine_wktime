@@ -100,6 +100,7 @@ en:
   
   wk_status_new: New
   wk_status_empty: Empty
+  wk_status_locked: Locked
   wk_status_submitted: Submitted
   wk_status_approved: Approved
   wk_status_rejected: Rejected

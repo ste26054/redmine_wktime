@@ -4,6 +4,7 @@
 
 <% 
 project_id = entry.nil? ? (@logtime_projects.blank? ? 0 : @logtime_projects[0].id) : entry.project_id	
+ is_special_project_and_cannot_edit_timelog = @editable && ((!entry.nil? && project_id.in?(@logtime_projects.map(&:id)) ) || entry.nil?) 
 if params[:enter_issue_id].blank? 
 
 	projects = options_for_wktime_project(@logtime_projects)
@@ -12,16 +13,15 @@ if params[:enter_issue_id].blank?
 	#if it is not visible, just show the id alone
 	projects.unshift( [ entry.project.name, entry.project_id ] ) if !entry.nil? && project.blank?
 %>
-
 	<td class="issue" align="left" width="<%= Setting.plugin_redmine_wktime['wktime_project_dd_width'] %>px">
-		<% project_name = entry.nil? ? (@logtime_projects.blank? ? 0 : @logtime_projects[0].id) : entry.project.name %>
-		<% if @editable %>
+		<%# project_name = entry.nil? ? (@logtime_projects.blank? ? 0 : @logtime_projects[0].id) : entry.project.name %>
+		<% if is_special_project_and_cannot_edit_timelog %>
 			<%=h select_tag(isTemplate ? '__template__time_entry[][project_id]' : 'time_entry[][project_id]', 
 			options_for_select(projects, :selected =>  project_id),
 			:onchange => "projectChanged(this,#{@row.to_s()});", :style=> "width:#{Setting.plugin_redmine_wktime['wktime_project_dd_width']}px" ) %>
 		<% else %>
 
-			<%=h text_field_tag(isTemplate ? '__template__time_entry[][project_id]' : 'time_entry[][project_id]', project.blank? ? project_id : project[0], :readonly => true ) %>
+			<%=h text_field_tag(isTemplate ? '__template__time_entry[][project_id]' : 'time_entry[][project_id]', project.blank? ? project_id : project[0], :readonly => true, :style => "background-color: #ebebe4;" ) %>
 
 		<% end %>
 	</td>
@@ -60,7 +60,7 @@ if params[:enter_issue_id].blank?
 	%>
 	
 	<td class="issue" align="left" width="<%= Setting.plugin_redmine_wktime['wktime_issue_dd_width'] %>px">
-		<% if @editable %>
+		<% if is_special_project_and_cannot_edit_timelog %>
 			<%=h select_tag(isTemplate ? '__template__time_entry[][issue_id]' : 'time_entry[][issue_id]', 
 			options_for_select(issues, :selected =>  entry.nil? ? 0 : entry.issue_id, :required => true),
 			:style=> "width:#{Setting.plugin_redmine_wktime['wktime_issue_dd_width']}px" ) %>
@@ -74,7 +74,7 @@ if params[:enter_issue_id].blank?
 			  entry.issue
 			   else 
 			   	''
-			   	end, :readonly => true ) %>
+			   	end, :readonly => true, :style => "background-color: #ebebe4;"  ) %>
 
 		<% end %>
 	</td>
@@ -83,10 +83,20 @@ if params[:enter_issue_id].blank?
 		<%=h hidden_field_tag(isTemplate ? '__template__time_entry[][project_id]' : 'time_entry[][project_id]', 
 		(entry.nil? ? '' : entry.project_id.to_s)  ) %>
 	</td>
-
+	
 	<td class="issue" align="left">
+		<% if is_special_project_and_cannot_edit_timelog %>
+
 			<%=h text_field_tag(isTemplate ? '__template__time_entry[][issue_id]' : 'time_entry[][issue_id]', 
 			entry.nil? ? '' : entry.issue_id, :onkeypress => "issueAutocomplete(this,#{@row.to_s()});") %>
+		<% else %>
+			<%=h text_field_tag(isTemplate ? '__template__time_entry[][issue_id]' : 'time_entry[][issue_id]', 
+			 if (!entry.nil? && !entry.issue.nil?)
+			  entry.issue
+			   else 
+			   	''
+			   	end, :readonly => true, :style => "background-color: #ebebe4;"  ) %>
+		<% end %>
 	</td>
 
 <% end %>
@@ -108,7 +118,7 @@ if params[:enter_issue_id].blank?
 	end
 %>
 <td class="issue" align="left" width="<%= Setting.plugin_redmine_wktime['wktime_actv_dd_width'] %>px">
-<% if @editable %>
+<% if is_special_project_and_cannot_edit_timelog %>
 	<%=h select_tag(isTemplate ? '__template__time_entry[][activity_id]' : 'time_entry[][activity_id]', 
 	activities.blank? ? nil : options_for_select(activities, :selected => entry.nil? ? 0 : entry.activity_id),
 	:style=> "width:#{Setting.plugin_redmine_wktime['wktime_actv_dd_width']}px" ) %>
@@ -121,14 +131,14 @@ if params[:enter_issue_id].blank?
 			 entry.activity.name
 			  else
 			   ''
-			    end, :readonly => true ) %>
+			    end, :readonly => true, :style => "background-color: #ebebe4;"  ) %>
 <% end %>
 </td>
 
 <%if !Setting.plugin_redmine_wktime['wktime_enter_comment_in_row'].blank? &&
 	Setting.plugin_redmine_wktime['wktime_enter_comment_in_row'].to_i == 1 %>
 	<td class="comments" align="left">
-	<% if @editable %>
+	<% if is_special_project_and_cannot_edit_timelog %>
 	
 		<%=h text_field_tag(isTemplate ? '__template__time_entry[][comments]' : 'time_entry[][comments]',  
 			 (entry.nil? ? '' : entry.comments),:size => 35)%>
@@ -137,7 +147,7 @@ if params[:enter_issue_id].blank?
 		<%#=h entry.nil? ? '' : entry.comments%>
 		<%# Soniaz modification - if the issue is closed, it will appear as not editable but we still send the data for the form to respect all the index from editable issue %>
 		<%=h text_field_tag(isTemplate ? '__template__time_entry[][comments]' : 'time_entry[][comments]', 
-			 entry.nil? ? '' : entry.comments, :readonly => true)%>
+			 entry.nil? ? '' : entry.comments, :readonly => true, :style => "background-color: #ebebe4;" )%>
 	<% end %>
 	</td>
 <% end %>
